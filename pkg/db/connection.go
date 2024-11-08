@@ -5,6 +5,7 @@ import (
 
 	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	jpgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -44,4 +45,8 @@ func (ci *connectionImpl) Ping(ctx context.Context) error {
 		return errors.NewCode(NotConnected)
 	}
 	return ci.pool.Ping(ctx)
+}
+
+func (ci *connectionImpl) Query(ctx context.Context, sql string, arguments ...any) (jpgx.Rows, error) {
+	return ci.pool.Query(ctx, sql, arguments...)
 }

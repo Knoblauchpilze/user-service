@@ -30,7 +30,7 @@ func TestNew_ValidConfiguration(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestNew_Ping(t *testing.T) {
+func TestConnection_Ping(t *testing.T) {
 	conn, err := New(context.Background(), dbTestConfig)
 	require.Nil(t, err)
 
@@ -39,7 +39,7 @@ func TestNew_Ping(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestNew_Close(t *testing.T) {
+func TestConnection_Close(t *testing.T) {
 	conn, err := New(context.Background(), dbTestConfig)
 	require.Nil(t, err)
 

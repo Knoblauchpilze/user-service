@@ -12,22 +12,42 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.23.2"
-      - name: Setup postgresql
-        uses: ikalnytskyi/action-setup-postgres@v7
-        with:
-          username: test_user
-          password: test_password
-          database: test_db
-          port: 5432
-          postgres-version: "15"
-          ssl: true
-        id: postgres
+      - name: Install migrate tool
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+      - name: Setup test database
+        run: |
+          psql postgresql://postgres@localhost -v user_password=$USER_PASSWORD -f test/db_user_create.sql
+          psql postgresql://postgres@localhost -f test/db_create.sql
+        working-directory: ./database
+        env:
+          PGPASSWORD: postgres
+          USER_PASSWORD: test_password
+      - name: Migrate schema up
+        run: |
+          migrate -path test/migrations -database postgresql://test_user@localhost/test_db?sslmode=disable up
+        working-directory: ./database
+        env:
+          PGPASSWORD: test_password
       - name: Run tests with coverage
         run: go test ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov

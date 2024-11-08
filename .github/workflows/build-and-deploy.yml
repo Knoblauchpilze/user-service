@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.23.2"
-      - name:
+      - name: Setup postgresql
         uses: ikalnytskyi/action-setup-postgres@v7
         with:
           username: test_user
@@ -27,7 +27,7 @@ jobs:
           port: 5432
           postgres-version: "15"
           ssl: true
-          id: postgres
+        id: postgres
       - name: Run tests with coverage
         run: go test ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov

@@ -52,17 +52,17 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
+      - name: Install migrate tool
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
       - name: Create user
         run: |
           psql postgresql://postgres@localhost -v user_password=$USER_PASSWORD -f test/db_user_create.sql
       - name: Create database
         run: |
           psql postgresql://postgres@localhost -f test/db_create.sql
-      # - name: Install migrate tool
-      #   run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-      # - name: Migrate schema up
-      #   run: |
-      #     migrate -path database/test/migrations -database ${{ steps.postgres.outputs.connection-uri }} up
-      # - name: Migrate schema down
-      #   run: |
-      #     migrate -path database/test/migrations -database ${{ steps.postgres.outputs.connection-uri }} down -all
+      - name: Migrate schema up
+        run: |
+          migrate -path test/migrations -database postgresql://test_user@localhost/test_db up
+      - name: Migrate schema down
+        run: |
+          migrate -path test/migrations -database postgresql://test_user@localhost/test_db down -all

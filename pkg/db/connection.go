@@ -35,6 +35,7 @@ func New(ctx context.Context, config Config) (Connection, error) {
 func (ci *connectionImpl) Close(ctx context.Context) {
 	if ci.pool != nil {
 		ci.pool.Close()
+		ci.pool = nil
 	}
 }
 

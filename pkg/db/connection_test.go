@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/KnoblauchPilze/user-service/pkg/db/postgresql"
+	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -48,5 +49,5 @@ func TestNew_Close(t *testing.T) {
 	conn.Close(context.Background())
 	err = conn.Ping(context.Background())
 	assert := assert.New(t)
-	assert.NotNil(err)
+	assert.True(errors.IsErrorWithCode(err, NotConnected))
 }

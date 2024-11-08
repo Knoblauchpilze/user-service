@@ -39,11 +39,10 @@ jobs:
       - name: Setup postgresql
         uses: ikalnytskyi/action-setup-postgres@v7
         id: postgres
-      - name: Install migrate tool
-        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
       - name: Create user
+        # https://github.com/ikalnytskyi/action-setup-postgres?tab=readme-ov-file#recommended
         run: |
-          psql -U postgres postgres -v user_password=$USER_PASSWORD -f ./database/test/db_user_create.sql
+          psql ${{ steps.postgres.outputs.connection-uri }} -v user_password=$USER_PASSWORD -f ./database/test/db_user_create.sql
       - name: Create database
         run: |
           psql -U postgres postgres -f ./database/test/db_create.sql

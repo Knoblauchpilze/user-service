@@ -28,33 +28,48 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-code-changes]
     if: ${{ needs.detect-code-changes.outputs.test-db == 'true' || needs.detect-code-changes.outputs.ci == 'true' }}
-    env:
-      USER_PASSWORD: test_password
+    # # https://dev.to/techschoolguru/how-to-setup-github-actions-for-go-postgres-to-run-automated-tests-81o
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.23.2"
-      - name: Setup postgresql
-        uses: ikalnytskyi/action-setup-postgres@v7
-        id: postgres
+      # - name: Setup postgresql
+      #   uses: ikalnytskyi/action-setup-postgres@v7
+      #   id: postgres
       - name: Create user
         # https://github.com/ikalnytskyi/action-setup-postgres?tab=readme-ov-file#recommended
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -v user_password=$USER_PASSWORD -f ./database/test/db_user_create.sql
-      - name: Create database
-        run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -f ./database/test/db_create.sql
-      - name: Install migrate tool
-        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-      - name: Migrate schema up
-        # https://github.com/actions/runner/issues/1126
-        # https://community.grafana.com/t/grafana-crashes-when-trying-to-connect-to-postgres-panic-setting-pgservicefile-not-supported/46527
-        run: |
-          unset PGSERVICEFILE
-          migrate -path database/test/migrations -database ${{ steps.postgres.outputs.connection-uri }} up
-      - name: Migrate schema down
-        run: |
-          unset PGSERVICEFILE
-          migrate -path database/test/migrations -database ${{ steps.postgres.outputs.connection-uri }} down -all
+          psql postgresql://postgres@localhost -v user_password=$USER_PASSWORD -f ./database/test/db_user_create.sql
+
+      #     psql ${{ steps.postgres.outputs.connection-uri }} -v user_password=$USER_PASSWORD -f ./database/test/db_user_create.sql
+      # - name: Create database
+      #   run: |
+      #     psql ${{ steps.postgres.outputs.connection-uri }} -f ./database/test/db_create.sql
+      # - name: Install migrate tool
+      #   run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+      # - name: Migrate schema up
+      #   # https://github.com/actions/runner/issues/1126
+      #   # https://community.grafana.com/t/grafana-crashes-when-trying-to-connect-to-postgres-panic-setting-pgservicefile-not-supported/46527
+      #   run: |
+      #     unset PGSERVICEFILE
+      #     migrate -path database/test/migrations -database ${{ steps.postgres.outputs.connection-uri }} up
+      # - name: Migrate schema down
+      #   run: |
+      #     unset PGSERVICEFILE
+      #     migrate -path database/test/migrations -database ${{ steps.postgres.outputs.connection-uri }} down -all

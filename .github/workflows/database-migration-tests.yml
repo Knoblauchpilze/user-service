@@ -24,7 +24,7 @@ jobs:
               - '.github/workflows/database-migration-tests.yml'
             test-db:
               - 'database/test/**'
-  run-test-db-migrations:
+  validate-test-db:
     runs-on: ubuntu-latest
     needs: [detect-code-changes]
     if: ${{ needs.detect-code-changes.outputs.test-db == 'true' || needs.detect-code-changes.outputs.ci == 'true' }}
@@ -42,6 +42,8 @@ jobs:
       - name: Install migrate tool
         run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
       - name: Create user
-        run: ./database/create_user.sh test
+        run: |
+          psql -U postgres postgres -v user_password=$USER_PASSWORD -f ./database/test/db_user_create.sql
       - name: Create database
-        run: ./database/create_database.sh test
+        run: |
+          psql -U postgres postgres -f ./database/test/db_create.sql

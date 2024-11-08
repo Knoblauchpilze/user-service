@@ -66,7 +66,7 @@ jobs:
           psql postgresql://postgres@localhost -f test/db_create.sql
       - name: Migrate schema up
         run: |
-          migrate -path test/migrations -database postgresql://test_user@localhost/test_db up
+          migrate -path test/migrations -database postgresql://test_user@localhost/test_db?sslmode=disable up
       - name: Migrate schema down
         run: |
-          migrate -path test/migrations -database postgresql://test_user@localhost/test_db down -all
+          migrate -path test/migrations -database postgresql://test_user@localhost/test_db?sslmode=disable down -all

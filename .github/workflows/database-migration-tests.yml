@@ -1,4 +1,4 @@
-name: Build and deploy services
+name: Database migration tests
 
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
   run-test-db-migrations:
     runs-on: ubuntu-latest
     needs: [detect-code-changes]
-    if: ${{ needs.detect-code-changes.outputs.test-db == 'true' || needs.analyze-code-changes.outputs.ci == 'true' }}
+    if: ${{ needs.detect-code-changes.outputs.test-db == 'true' || needs.detect-code-changes.outputs.ci == 'true' }}
     env:
       USER_PASSWORD: test_password
     steps:

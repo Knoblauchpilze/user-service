@@ -32,6 +32,9 @@ jobs:
     defaults:
       run:
         working-directory: ./database
+    env:
+      PGPASSWORD: postgres
+      USER_PASSWORD: test_password
     # https://dev.to/techschoolguru/how-to-setup-github-actions-for-go-postgres-to-run-automated-tests-81o
     services:
       postgres:
@@ -52,9 +55,6 @@ jobs:
       - name: Create user
         run: |
           psql postgresql://postgres@localhost -v user_password=$USER_PASSWORD -f test/db_user_create.sql
-        env:
-          PGPASSWORD: postgres
-          USER_PASSWORD: test_password
       - name: Create database
         run: |
           psql postgresql://postgres@localhost -f test/db_create.sql

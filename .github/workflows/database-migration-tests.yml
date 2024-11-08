@@ -45,4 +45,4 @@ jobs:
           psql ${{ steps.postgres.outputs.connection-uri }} -v user_password=$USER_PASSWORD -f ./database/test/db_user_create.sql
       - name: Create database
         run: |
-          psql -U postgres postgres -f ./database/test/db_create.sql
+          psql ${{ steps.postgres.outputs.connection-uri }} -f ./database/test/db_create.sql

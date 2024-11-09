@@ -20,7 +20,7 @@ func QueryOne[T any](ctx context.Context, conn Connection, sql string, arguments
 	}
 
 	// https://pkg.go.dev/github.com/jackc/pgx/v5#RowToStructByName
-	out, err = pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[T])
+	out, err = pgx.CollectExactlyOneRow(rows, getCollectorForType[T]())
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return out, errors.WrapCode(err, NoMatchingRows)

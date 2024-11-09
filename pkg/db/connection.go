@@ -12,6 +12,8 @@ import (
 type Connection interface {
 	Close(ctx context.Context)
 	Ping(ctx context.Context) error
+
+	Exec(ctx context.Context, sql string, arguments ...any) (int64, error)
 }
 
 type connectionImpl struct {
@@ -45,6 +47,19 @@ func (ci *connectionImpl) Ping(ctx context.Context) error {
 		return errors.NewCode(NotConnected)
 	}
 	return ci.pool.Ping(ctx)
+}
+
+func (ci *connectionImpl) Exec(ctx context.Context, sql string, arguments ...any) (int64, error) {
+	if ci.pool == nil {
+		return 0, errors.NewCode(NotConnected)
+	}
+
+	tag, err := ci.pool.Exec(ctx, sql, arguments...)
+	if err != nil {
+		return tag.RowsAffected(), errors.WrapCode(err, ExecFailure)
+	}
+
+	return tag.RowsAffected(), err
 }
 
 func (ci *connectionImpl) Query(ctx context.Context, sql string, arguments ...any) (jpgx.Rows, error) {

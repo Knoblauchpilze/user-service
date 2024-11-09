@@ -28,7 +28,7 @@ func TestUnit_New_ValidConnectionString(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestUnit_New_ConnectsToDatabase(t *testing.T) {
+func TestIT_New_ConnectsToDatabase(t *testing.T) {
 	const connStr = "postgres://test_user:test_password@localhost:5432/test_db"
 	pool, err := New(context.Background(), connStr)
 	require.Nil(t, err)

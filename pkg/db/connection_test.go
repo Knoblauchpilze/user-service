@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNew_InvalidConfiguration(t *testing.T) {
+func TestUnit_New_InvalidConfiguration(t *testing.T) {
 	config := postgresql.Config{
 		Host: ":/not-a-host",
 	}
@@ -22,7 +22,7 @@ func TestNew_InvalidConfiguration(t *testing.T) {
 	assert.NotNil(err)
 }
 
-func TestNew_ValidConfiguration(t *testing.T) {
+func TestIT_New_ValidConfiguration(t *testing.T) {
 	conn, err := New(context.Background(), dbTestConfig)
 
 	assert := assert.New(t)
@@ -30,7 +30,7 @@ func TestNew_ValidConfiguration(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestConnection_Ping(t *testing.T) {
+func TestIT_Connection_Ping(t *testing.T) {
 	conn, err := New(context.Background(), dbTestConfig)
 	require.Nil(t, err)
 
@@ -39,7 +39,7 @@ func TestConnection_Ping(t *testing.T) {
 	assert.Nil(err)
 }
 
-func TestConnection_Close(t *testing.T) {
+func TestIT_Connection_Close(t *testing.T) {
 	conn, err := New(context.Background(), dbTestConfig)
 	require.Nil(t, err)
 

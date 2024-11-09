@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfig_ExpectCorrectConnectionString(t *testing.T) {
+func TestUnit_Config_ExpectCorrectConnectionString(t *testing.T) {
 	config := Config{
 		Host:           "my-host",
 		Port:           8976,

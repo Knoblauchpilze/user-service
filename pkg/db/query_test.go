@@ -14,7 +14,7 @@ type dummyConnection struct {
 
 const sampleSqlQuery = "SELECT name FROM my_table"
 
-func TestQueryOne_UnsupportedConnection(t *testing.T) {
+func TestUnit_QueryOne_UnsupportedConnection(t *testing.T) {
 	_, err := QueryOne[int](context.Background(), &dummyConnection{}, sampleSqlQuery)
 
 	assert := assert.New(t)
@@ -22,7 +22,7 @@ func TestQueryOne_UnsupportedConnection(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation))
 }
 
-func TestQueryOne_WhenClosed_ExpectFailure(t *testing.T) {
+func TestIT_QueryOne_WhenClosed_ExpectFailure(t *testing.T) {
 	conn := NewTestConnection(t)
 	conn.Close(context.Background())
 
@@ -35,7 +35,7 @@ func TestQueryOne_WhenClosed_ExpectFailure(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(cause, NotConnected))
 }
 
-func TestQueryOne_WhenConnectionFails_ExpectError(t *testing.T) {
+func TestIT_QueryOne_WhenConnectionFails_ExpectError(t *testing.T) {
 	conn := NewTestConnection(t)
 
 	sqlQuery := "SELECT name FROM my_tables"
@@ -49,7 +49,7 @@ func TestQueryOne_WhenConnectionFails_ExpectError(t *testing.T) {
 	assert.NotNil(cause)
 }
 
-func TestQueryOne_WhenNoData_ExpectFailure(t *testing.T) {
+func TestIT_QueryOne_WhenNoData_ExpectFailure(t *testing.T) {
 	conn := NewTestConnection(t)
 
 	type element struct {
@@ -64,7 +64,7 @@ func TestQueryOne_WhenNoData_ExpectFailure(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, NoMatchingRows))
 }
 
-func TestQueryOne_WhenTooManyRows_ExpectFailure(t *testing.T) {
+func TestIT_QueryOne_WhenTooManyRows_ExpectFailure(t *testing.T) {
 	conn := NewTestConnection(t)
 
 	type element struct {
@@ -79,7 +79,7 @@ func TestQueryOne_WhenTooManyRows_ExpectFailure(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, TooManyMatchingRows))
 }
 
-func TestQueryAll_UnsupportedConnection(t *testing.T) {
+func TestIT_QueryAll_UnsupportedConnection(t *testing.T) {
 	_, err := QueryAll[int](context.Background(), &dummyConnection{}, sampleSqlQuery)
 
 	assert := assert.New(t)
@@ -87,7 +87,7 @@ func TestQueryAll_UnsupportedConnection(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation))
 }
 
-func TestQueryAll_WhenClosed_ExpectFailure(t *testing.T) {
+func TestIT_QueryAll_WhenClosed_ExpectFailure(t *testing.T) {
 	conn := NewTestConnection(t)
 	conn.Close(context.Background())
 
@@ -100,7 +100,7 @@ func TestQueryAll_WhenClosed_ExpectFailure(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(cause, NotConnected))
 }
 
-func TestQueryAll_WhenConnectionFails_ExpectError(t *testing.T) {
+func TestIT_QueryAll_WhenConnectionFails_ExpectError(t *testing.T) {
 	conn := NewTestConnection(t)
 
 	sqlQuery := "SELECT name FROM my_tables"
@@ -114,7 +114,7 @@ func TestQueryAll_WhenConnectionFails_ExpectError(t *testing.T) {
 	assert.NotNil(cause)
 }
 
-func TestQueryAll_NoData(t *testing.T) {
+func TestIT_QueryAll_NoData(t *testing.T) {
 	conn := NewTestConnection(t)
 
 	type element struct {
@@ -129,7 +129,7 @@ func TestQueryAll_NoData(t *testing.T) {
 	assert.Empty(out)
 }
 
-func TestQueryAll_WithData(t *testing.T) {
+func TestIT_QueryAll_WithData(t *testing.T) {
 	conn := NewTestConnection(t)
 
 	type element struct {

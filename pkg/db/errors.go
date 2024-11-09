@@ -10,4 +10,5 @@ const (
 	TooManyMatchingRows errors.ErrorCode = 111
 	QueryOneFailure     errors.ErrorCode = 112
 	QueryAllFailure     errors.ErrorCode = 113
+	ExecFailure         errors.ErrorCode = 114
 )

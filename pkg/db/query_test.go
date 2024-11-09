@@ -9,6 +9,8 @@ import (
 )
 
 type dummyConnection struct {
+	Connection
+
 	err error
 }
 

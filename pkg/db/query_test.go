@@ -22,6 +22,19 @@ func TestQueryOne_UnsupportedConnection(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation))
 }
 
+func TestQueryOne_WhenClosed_ExpectFailure(t *testing.T) {
+	conn := NewTestConnection(t)
+	conn.Close(context.Background())
+
+	_, err := QueryOne[int](context.Background(), conn, sampleSqlQuery)
+
+	assert := assert.New(t)
+	assert.NotNil(err)
+	assert.True(errors.IsErrorWithCode(err, QueryOneFailure))
+	cause := errors.Unwrap(err)
+	assert.True(errors.IsErrorWithCode(cause, NotConnected))
+}
+
 func TestQueryOne_WhenConnectionFails_ExpectError(t *testing.T) {
 	conn := NewTestConnection(t)
 
@@ -72,6 +85,19 @@ func TestQueryAll_UnsupportedConnection(t *testing.T) {
 	assert := assert.New(t)
 	assert.NotNil(err)
 	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation))
+}
+
+func TestQueryAll_WhenClosed_ExpectFailure(t *testing.T) {
+	conn := NewTestConnection(t)
+	conn.Close(context.Background())
+
+	_, err := QueryAll[int](context.Background(), conn, sampleSqlQuery)
+
+	assert := assert.New(t)
+	assert.NotNil(err)
+	assert.True(errors.IsErrorWithCode(err, QueryAllFailure))
+	cause := errors.Unwrap(err)
+	assert.True(errors.IsErrorWithCode(cause, NotConnected))
 }
 
 func TestQueryAll_WhenConnectionFails_ExpectError(t *testing.T) {

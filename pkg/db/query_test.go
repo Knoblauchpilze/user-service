@@ -6,7 +6,6 @@ import (
 
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type dummyConnection struct {
@@ -24,11 +23,10 @@ func TestQueryOne_UnsupportedConnection(t *testing.T) {
 }
 
 func TestQueryOne_WhenConnectionFails_ExpectError(t *testing.T) {
-	conn, err := New(context.Background(), dbTestConfig)
-	require.Nil(t, err)
+	conn := NewTestConnection(t)
 
 	sqlQuery := "SELECT name FROM my_tables"
-	_, err = QueryOne[string](context.Background(), conn, sqlQuery)
+	_, err := QueryOne[string](context.Background(), conn, sqlQuery)
 
 	assert := assert.New(t)
 	assert.NotNil(err)
@@ -39,15 +37,14 @@ func TestQueryOne_WhenConnectionFails_ExpectError(t *testing.T) {
 }
 
 func TestQueryOne_WhenNoData_ExpectFailure(t *testing.T) {
-	conn, err := New(context.Background(), dbTestConfig)
-	require.Nil(t, err)
+	conn := NewTestConnection(t)
 
 	type element struct {
 		Name string
 	}
 
 	sqlQuery := "SELECT name FROM my_table WHERE name = $1"
-	_, err = QueryOne[element](context.Background(), conn, sqlQuery, "does-not-exist")
+	_, err := QueryOne[element](context.Background(), conn, sqlQuery, "does-not-exist")
 
 	assert := assert.New(t)
 	assert.NotNil(err)
@@ -55,15 +52,14 @@ func TestQueryOne_WhenNoData_ExpectFailure(t *testing.T) {
 }
 
 func TestQueryOne_WhenTooManyRows_ExpectFailure(t *testing.T) {
-	conn, err := New(context.Background(), dbTestConfig)
-	require.Nil(t, err)
+	conn := NewTestConnection(t)
 
 	type element struct {
 		Name string
 	}
 
 	sqlQuery := "SELECT name FROM my_table"
-	_, err = QueryOne[element](context.Background(), conn, sqlQuery)
+	_, err := QueryOne[element](context.Background(), conn, sqlQuery)
 
 	assert := assert.New(t)
 	assert.NotNil(err)
@@ -79,11 +75,10 @@ func TestQueryAll_UnsupportedConnection(t *testing.T) {
 }
 
 func TestQueryAll_WhenConnectionFails_ExpectError(t *testing.T) {
-	conn, err := New(context.Background(), dbTestConfig)
-	require.Nil(t, err)
+	conn := NewTestConnection(t)
 
 	sqlQuery := "SELECT name FROM my_tables"
-	_, err = QueryAll[string](context.Background(), conn, sqlQuery)
+	_, err := QueryAll[string](context.Background(), conn, sqlQuery)
 
 	assert := assert.New(t)
 	assert.NotNil(err)
@@ -94,8 +89,7 @@ func TestQueryAll_WhenConnectionFails_ExpectError(t *testing.T) {
 }
 
 func TestQueryAll_NoData(t *testing.T) {
-	conn, err := New(context.Background(), dbTestConfig)
-	require.Nil(t, err)
+	conn := NewTestConnection(t)
 
 	type element struct {
 		Name string
@@ -110,8 +104,7 @@ func TestQueryAll_NoData(t *testing.T) {
 }
 
 func TestQueryAll_WithData(t *testing.T) {
-	conn, err := New(context.Background(), dbTestConfig)
-	require.Nil(t, err)
+	conn := NewTestConnection(t)
 
 	type element struct {
 		Name string

@@ -48,5 +48,8 @@ func (ci *connectionImpl) Ping(ctx context.Context) error {
 }
 
 func (ci *connectionImpl) Query(ctx context.Context, sql string, arguments ...any) (jpgx.Rows, error) {
+	if ci.pool == nil {
+		return nil, errors.NewCode(NotConnected)
+	}
 	return ci.pool.Query(ctx, sql, arguments...)
 }

@@ -45,7 +45,6 @@ func QueryAll[T any](ctx context.Context, conn Connection, sql string, arguments
 		return out, errors.WrapCode(err, QueryAllFailure)
 	}
 
-	// https://pkg.go.dev/github.com/jackc/pgx/v5#RowToStructByName
 	out, err = pgx.CollectRows(rows, pgx.RowToStructByName[T])
 	if err != nil {
 		return out, errors.WrapCode(err, QueryAllFailure)

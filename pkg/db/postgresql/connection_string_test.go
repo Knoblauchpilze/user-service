@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateConnectionString(t *testing.T) {
+func TestUnit_GenerateConnectionString(t *testing.T) {
 	type testCase struct {
 		host           string
 		port           uint16

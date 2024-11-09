@@ -12,6 +12,23 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.2"
+      - name: Run tests with coverage
+        run: go test -run='^TestUnit_.*' ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true
+          file: ./coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  it-tests:
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:15
@@ -49,7 +66,7 @@ jobs:
         env:
           PGPASSWORD: test_password
       - name: Run tests with coverage
-        run: go test ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
+        run: go test -run='^TestIT_.*' ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:

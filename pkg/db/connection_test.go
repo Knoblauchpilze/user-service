@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/db/postgresql"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/google/uuid"
@@ -97,6 +98,21 @@ func TestIT_Connection_Exec_Insert(t *testing.T) {
 	assert.Nil(err)
 }
 
+func TestIT_Connection_Exec_InsertDuplicate(t *testing.T) {
+	conn := newTestConnection(t)
+
+	_, name := insertTestData(t, conn)
+	id := uuid.New()
+
+	affectedRows, err := conn.Exec(context.Background(), "INSERT INTO my_table VALUES ($1, $2)", id, name)
+
+	assert := assert.New(t)
+	assert.Equal(int64(0), affectedRows)
+	assert.True(errors.IsErrorWithCode(err, ExecFailure))
+	cause := errors.Unwrap(err)
+	assert.True(errors.IsErrorWithCode(cause, pgx.UniqueConstraintViolation))
+}
+
 func TestIT_Connection_Exec_Update(t *testing.T) {
 	conn := newTestConnection(t)
 	id, _ := insertTestData(t, conn)
@@ -108,6 +124,20 @@ func TestIT_Connection_Exec_Update(t *testing.T) {
 	assert.Nil(err)
 
 	assertNameForId(t, conn, id, newName)
+}
+
+func TestIT_Connection_Exec_UpdateDuplicate(t *testing.T) {
+	conn := newTestConnection(t)
+	id, name := insertTestData(t, conn)
+
+	affectedRows, err := conn.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", "test-name", id)
+	assert := assert.New(t)
+	assert.Equal(int64(0), affectedRows)
+	assert.True(errors.IsErrorWithCode(err, ExecFailure))
+	cause := errors.Unwrap(err)
+	assert.True(errors.IsErrorWithCode(cause, pgx.UniqueConstraintViolation))
+
+	assertNameForId(t, conn, id, name.String())
 }
 
 func TestIT_Connection_Exec_Delete(t *testing.T) {

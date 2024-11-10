@@ -77,6 +77,7 @@ func (ci *connectionImpl) Exec(ctx context.Context, sql string, arguments ...any
 
 	tag, err := ci.pool.Exec(ctx, sql, arguments...)
 	if err != nil {
+		err = pgx.AnalyzeAndWrapPgError(err)
 		return tag.RowsAffected(), errors.WrapCode(err, ExecFailure)
 	}
 
@@ -87,5 +88,12 @@ func (ci *connectionImpl) query(ctx context.Context, sql string, arguments ...an
 	if ci.pool == nil {
 		return nil, errors.NewCode(NotConnected)
 	}
-	return ci.pool.Query(ctx, sql, arguments...)
+	rows, err := ci.pool.Query(ctx, sql, arguments...)
+
+	err = pgx.AnalyzeAndWrapPgError(err)
+	if err != nil {
+		return nil, err
+	}
+
+	return rows, nil
 }

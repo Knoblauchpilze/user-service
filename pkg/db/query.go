@@ -15,7 +15,7 @@ func QueryOne[T any](ctx context.Context, conn Connection, sql string, arguments
 	if !ok {
 		return out, errors.NewCode(UnsupportedOperation)
 	}
-	rows, err := connImpl.Query(ctx, sql, arguments...)
+	rows, err := connImpl.query(ctx, sql, arguments...)
 	if err != nil {
 		return out, errors.WrapCode(err, QueryOneFailure)
 	}
@@ -40,7 +40,7 @@ func QueryAll[T any](ctx context.Context, conn Connection, sql string, arguments
 	if !ok {
 		return out, errors.NewCode(UnsupportedOperation)
 	}
-	rows, err := connImpl.Query(ctx, sql, arguments...)
+	rows, err := connImpl.query(ctx, sql, arguments...)
 	if err != nil {
 		return out, errors.WrapCode(err, QueryAllFailure)
 	}

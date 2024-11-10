@@ -11,8 +11,6 @@ import (
 
 type dummyConnection struct {
 	Connection
-
-	err error
 }
 
 const sampleSqlQuery = "SELECT name FROM my_table"
@@ -26,7 +24,7 @@ func TestUnit_QueryOne_UnsupportedConnection(t *testing.T) {
 }
 
 func TestIT_QueryOne_WhenClosed_ExpectFailure(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 	conn.Close(context.Background())
 
 	_, err := QueryOne[int](context.Background(), conn, sampleSqlQuery)
@@ -39,7 +37,7 @@ func TestIT_QueryOne_WhenClosed_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_QueryOne_WhenConnectionFails_ExpectFailure(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	sqlQuery := "SELECT name FROM my_tables"
 	_, err := QueryOne[string](context.Background(), conn, sqlQuery)
@@ -53,7 +51,7 @@ func TestIT_QueryOne_WhenConnectionFails_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_QueryOne_WhenNoData_ExpectFailure(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	type element struct {
 		Name string
@@ -68,7 +66,7 @@ func TestIT_QueryOne_WhenNoData_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_QueryOne_WhenTooManyRows_ExpectFailure(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	type element struct {
 		Name string
@@ -83,7 +81,7 @@ func TestIT_QueryOne_WhenTooManyRows_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_QueryOne_ToStruct(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	type element struct {
 		Id   string
@@ -103,7 +101,7 @@ func TestIT_QueryOne_ToStruct(t *testing.T) {
 }
 
 func TestIT_QueryOne_ToString(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	sqlQuery := "SELECT id FROM my_table WHERE name = 'test-name'"
 	actual, err := QueryOne[string](context.Background(), conn, sqlQuery)
@@ -114,7 +112,7 @@ func TestIT_QueryOne_ToString(t *testing.T) {
 }
 
 func TestIT_QueryOne_ToUuid(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	sqlQuery := "SELECT id FROM my_table WHERE name = 'test-name'"
 	actual, err := QueryOne[uuid.UUID](context.Background(), conn, sqlQuery)
@@ -134,7 +132,7 @@ func TestIT_QueryAll_UnsupportedConnection(t *testing.T) {
 }
 
 func TestIT_QueryAll_WhenClosed_ExpectFailure(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 	conn.Close(context.Background())
 
 	_, err := QueryAll[int](context.Background(), conn, sampleSqlQuery)
@@ -147,7 +145,7 @@ func TestIT_QueryAll_WhenClosed_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_QueryAll_WhenConnectionFails_ExpectFailure(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	sqlQuery := "SELECT name FROM my_tables"
 	_, err := QueryAll[string](context.Background(), conn, sqlQuery)
@@ -161,7 +159,7 @@ func TestIT_QueryAll_WhenConnectionFails_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_QueryAll_NoData(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	type element struct {
 		Name string
@@ -176,7 +174,7 @@ func TestIT_QueryAll_NoData(t *testing.T) {
 }
 
 func TestIT_QueryAll_ToStruct(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	type element struct {
 		Id   string
@@ -212,7 +210,7 @@ func TestIT_QueryAll_ToStruct(t *testing.T) {
 }
 
 func TestIT_QueryAll_ToString(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	sqlQuery := `
 		SELECT
@@ -236,7 +234,7 @@ func TestIT_QueryAll_ToString(t *testing.T) {
 }
 
 func TestIT_QueryAll_ToUuid(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	sqlQuery := `
 		SELECT
@@ -258,7 +256,3 @@ func TestIT_QueryAll_ToUuid(t *testing.T) {
 	}
 	assert.Equal(expected, actual)
 }
-
-func (dc *dummyConnection) Close(ctx context.Context) {}
-
-func (dc *dummyConnection) Ping(ctx context.Context) error { return dc.err }

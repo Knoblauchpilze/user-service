@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -31,9 +32,7 @@ func TestIT_QueryOne_WhenClosed_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, QueryOneFailure))
-	cause := errors.Unwrap(err)
-	assert.True(errors.IsErrorWithCode(cause, NotConnected))
+	assert.True(errors.IsErrorWithCode(err, NotConnected))
 }
 
 func TestIT_QueryOne_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -44,7 +43,7 @@ func TestIT_QueryOne_WhenConnectionFails_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, QueryOneFailure))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
 
 	cause := errors.Unwrap(err)
 	assert.NotNil(cause)
@@ -139,9 +138,7 @@ func TestIT_QueryAll_WhenClosed_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, QueryAllFailure))
-	cause := errors.Unwrap(err)
-	assert.True(errors.IsErrorWithCode(cause, NotConnected))
+	assert.True(errors.IsErrorWithCode(err, NotConnected))
 }
 
 func TestIT_QueryAll_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -152,7 +149,7 @@ func TestIT_QueryAll_WhenConnectionFails_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, QueryAllFailure))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
 
 	cause := errors.Unwrap(err)
 	assert.NotNil(cause)

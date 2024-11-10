@@ -108,9 +108,7 @@ func TestIT_Connection_Exec_InsertDuplicate(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, ExecFailure))
-	cause := errors.Unwrap(err)
-	assert.True(errors.IsErrorWithCode(cause, pgx.UniqueConstraintViolation))
+	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation))
 }
 
 func TestIT_Connection_Exec_Update(t *testing.T) {
@@ -133,9 +131,7 @@ func TestIT_Connection_Exec_UpdateDuplicate(t *testing.T) {
 	affectedRows, err := conn.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", "test-name", id)
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, ExecFailure))
-	cause := errors.Unwrap(err)
-	assert.True(errors.IsErrorWithCode(cause, pgx.UniqueConstraintViolation))
+	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation))
 
 	assertNameForId(t, conn, id, name.String())
 }
@@ -169,5 +165,5 @@ func TestIT_Connection_Exec_WrongSyntax(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, ExecFailure))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
 }

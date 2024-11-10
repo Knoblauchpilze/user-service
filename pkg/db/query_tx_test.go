@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -29,9 +30,7 @@ func TestIT_QueryOneTx_WhenCommitted_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, QueryOneFailure))
-	cause := errors.Unwrap(err)
-	assert.True(errors.IsErrorWithCode(cause, AlreadyCommitted))
+	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted))
 }
 
 func TestIT_QueryOneTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -42,7 +41,7 @@ func TestIT_QueryOneTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, QueryOneFailure))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
 
 	cause := errors.Unwrap(err)
 	assert.NotNil(cause)
@@ -137,9 +136,7 @@ func TestIT_QueryAllTx_WhenCommitted_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, QueryAllFailure))
-	cause := errors.Unwrap(err)
-	assert.True(errors.IsErrorWithCode(cause, AlreadyCommitted))
+	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted))
 }
 
 func TestIT_QueryAllTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -150,7 +147,7 @@ func TestIT_QueryAllTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, QueryAllFailure))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
 
 	cause := errors.Unwrap(err)
 	assert.NotNil(cause)

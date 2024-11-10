@@ -3,6 +3,7 @@ package pgx
 import "github.com/KnoblauchPilze/user-service/pkg/errors"
 
 const (
-	ForeignKeyValidation      errors.ErrorCode = 200
-	UniqueConstraintViolation errors.ErrorCode = 201
+	GenericSqlError           errors.ErrorCode = 200
+	ForeignKeyValidation      errors.ErrorCode = 201
+	UniqueConstraintViolation errors.ErrorCode = 202
 )

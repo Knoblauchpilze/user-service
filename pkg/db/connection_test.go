@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/KnoblauchPilze/user-service/pkg/db/postgresql"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
@@ -48,6 +49,28 @@ func TestIT_Connection_Close(t *testing.T) {
 	conn.Close(context.Background())
 	err = conn.Ping(context.Background())
 	assert := assert.New(t)
+	assert.True(errors.IsErrorWithCode(err, NotConnected))
+}
+
+func TestIT_Connection_BeginTx_TimeStampIsValid(t *testing.T) {
+	conn := newTestConnection(t)
+
+	beforeTx := time.Now()
+	tx, err := conn.BeginTx(context.Background())
+
+	assert := assert.New(t)
+	assert.Nil(err)
+	assert.True(beforeTx.Before(tx.TimeStamp()))
+}
+
+func TestIT_Connection_BeginTx_ClosedConnection(t *testing.T) {
+	conn := newTestConnection(t)
+	conn.Close(context.Background())
+
+	tx, err := conn.BeginTx(context.Background())
+
+	assert := assert.New(t)
+	assert.Nil(tx)
 	assert.True(errors.IsErrorWithCode(err, NotConnected))
 }
 

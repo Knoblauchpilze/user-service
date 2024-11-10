@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
@@ -12,6 +13,8 @@ import (
 type Connection interface {
 	Close(ctx context.Context)
 	Ping(ctx context.Context) error
+
+	BeginTx(ctx context.Context) (Transaction, error)
 
 	Exec(ctx context.Context, sql string, arguments ...any) (int64, error)
 }
@@ -47,6 +50,24 @@ func (ci *connectionImpl) Ping(ctx context.Context) error {
 		return errors.NewCode(NotConnected)
 	}
 	return ci.pool.Ping(ctx)
+}
+
+func (ci *connectionImpl) BeginTx(ctx context.Context) (Transaction, error) {
+	if ci.pool == nil {
+		return nil, errors.NewCode(NotConnected)
+	}
+
+	pgxTx, err := ci.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := &transactionImpl{
+		timeStamp: time.Now(),
+		tx:        pgxTx,
+	}
+
+	return tx, nil
 }
 
 func (ci *connectionImpl) Exec(ctx context.Context, sql string, arguments ...any) (int64, error) {

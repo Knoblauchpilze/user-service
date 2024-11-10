@@ -17,10 +17,27 @@ func newTestConnection(t *testing.T) Connection {
 	return conn
 }
 
+func newTestTransaction(t *testing.T) (Connection, Transaction) {
+	conn, err := New(context.Background(), dbTestConfig)
+	require.Nil(t, err)
+	tx, err := conn.BeginTx(context.Background())
+	require.Nil(t, err)
+	return conn, tx
+}
+
 func insertTestData(t *testing.T, conn Connection) (id uuid.UUID, name uuid.UUID) {
 	id = uuid.New()
 	name = uuid.New()
 	_, err := conn.Exec(context.Background(), "INSERT INTO my_table VALUES ($1, $2)", id, name)
+	require.Nil(t, err)
+
+	return
+}
+
+func insertTestDataTx(t *testing.T, tx Transaction) (id uuid.UUID, name uuid.UUID) {
+	id = uuid.New()
+	name = uuid.New()
+	_, err := tx.Exec(context.Background(), "INSERT INTO my_table VALUES ($1, $2)", id, name)
 	require.Nil(t, err)
 
 	return

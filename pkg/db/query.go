@@ -4,8 +4,9 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
-	"github.com/jackc/pgx/v5"
+	jpgx "github.com/jackc/pgx/v5"
 )
 
 func QueryOne[T any](ctx context.Context, conn Connection, sql string, arguments ...any) (T, error) {
@@ -17,14 +18,14 @@ func QueryOne[T any](ctx context.Context, conn Connection, sql string, arguments
 	}
 	rows, err := connImpl.query(ctx, sql, arguments...)
 	if err != nil {
-		return out, errors.WrapCode(err, QueryOneFailure)
+		return out, pgx.AnalyzeAndWrapPgError(err)
 	}
 
-	out, err = pgx.CollectExactlyOneRow(rows, getCollectorForType[T]())
+	out, err = jpgx.CollectExactlyOneRow(rows, getCollectorForType[T]())
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err == jpgx.ErrNoRows {
 			return out, errors.WrapCode(err, NoMatchingRows)
-		} else if err == pgx.ErrTooManyRows {
+		} else if err == jpgx.ErrTooManyRows {
 			return out, errors.WrapCode(err, TooManyMatchingRows)
 		}
 		return out, err
@@ -42,24 +43,24 @@ func QueryAll[T any](ctx context.Context, conn Connection, sql string, arguments
 	}
 	rows, err := connImpl.query(ctx, sql, arguments...)
 	if err != nil {
-		return out, errors.WrapCode(err, QueryAllFailure)
+		return out, pgx.AnalyzeAndWrapPgError(err)
 	}
 
-	out, err = pgx.CollectRows(rows, getCollectorForType[T]())
+	out, err = jpgx.CollectRows(rows, getCollectorForType[T]())
 	if err != nil {
-		return out, errors.WrapCode(err, QueryAllFailure)
+		return out, errors.WrapCode(err, UnsupportedOperation)
 	}
 
 	return out, nil
 }
 
-func getCollectorForType[T any]() pgx.RowToFunc[T] {
+func getCollectorForType[T any]() jpgx.RowToFunc[T] {
 	var value T
 
 	// https://pkg.go.dev/github.com/jackc/pgx/v5#RowToStructByName
 	if reflect.ValueOf(value).Kind() == reflect.Struct {
-		return pgx.RowToStructByName[T]
+		return jpgx.RowToStructByName[T]
 	}
 
-	return pgx.RowTo[T]
+	return jpgx.RowTo[T]
 }

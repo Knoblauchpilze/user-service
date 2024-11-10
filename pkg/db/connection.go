@@ -77,8 +77,7 @@ func (ci *connectionImpl) Exec(ctx context.Context, sql string, arguments ...any
 
 	tag, err := ci.pool.Exec(ctx, sql, arguments...)
 	if err != nil {
-		err = pgx.AnalyzeAndWrapPgError(err)
-		return tag.RowsAffected(), errors.WrapCode(err, ExecFailure)
+		return tag.RowsAffected(), pgx.AnalyzeAndWrapPgError(err)
 	}
 
 	return tag.RowsAffected(), err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	jpgx "github.com/jackc/pgx/v5"
 )
@@ -44,7 +45,7 @@ func (ti *transactionImpl) Exec(ctx context.Context, sql string, arguments ...an
 	ti.updateErrorStatus(err)
 
 	if err != nil {
-		return tag.RowsAffected(), errors.WrapCode(err, ExecFailure)
+		return tag.RowsAffected(), pgx.AnalyzeAndWrapPgError(err)
 	}
 
 	return tag.RowsAffected(), err

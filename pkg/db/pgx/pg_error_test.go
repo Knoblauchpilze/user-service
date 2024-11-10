@@ -40,6 +40,10 @@ func TestUnit_AnalyzeAndWrapPgError(t *testing.T) {
 			code:          "23505",
 			expectedError: UniqueConstraintViolation,
 		},
+		{
+			code:          "not-a-code",
+			expectedError: GenericSqlError,
+		},
 	}
 
 	for _, testCase := range testCases {

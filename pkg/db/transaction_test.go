@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -91,7 +92,7 @@ func TestIT_Transaction_Exec_WrongSyntax(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, ExecFailure))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
 }
 
 func TestIT_Transaction_Exec_WhenError_ExpectRollback(t *testing.T) {

@@ -24,5 +24,5 @@ func AnalyzeAndWrapPgError(err error) error {
 		return errors.WrapCode(err, UniqueConstraintViolation)
 	}
 
-	return err
+	return errors.WrapCode(err, GenericSqlError)
 }

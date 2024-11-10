@@ -32,7 +32,7 @@ func TestIT_New_ValidConfiguration(t *testing.T) {
 }
 
 func TestIT_Connection_Ping(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	err := conn.Ping(context.Background())
 	assert := assert.New(t)
@@ -40,7 +40,7 @@ func TestIT_Connection_Ping(t *testing.T) {
 }
 
 func TestIT_Connection_Close(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	err := conn.Ping(context.Background())
 	require.Nil(t, err)
@@ -52,7 +52,7 @@ func TestIT_Connection_Close(t *testing.T) {
 }
 
 func TestIT_Connection_Exec_Select(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	affectedRows, err := conn.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE name = 'test-name'")
 
@@ -62,7 +62,7 @@ func TestIT_Connection_Exec_Select(t *testing.T) {
 }
 
 func TestIT_Connection_Exec_Insert(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	id := uuid.New()
 	// Also using a uuid for the name to easily generate characters
@@ -75,7 +75,7 @@ func TestIT_Connection_Exec_Insert(t *testing.T) {
 }
 
 func TestIT_Connection_Exec_Update(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 	id, _ := insertTestData(t, conn)
 	newName := uuid.New().String()
 
@@ -88,7 +88,7 @@ func TestIT_Connection_Exec_Update(t *testing.T) {
 }
 
 func TestIT_Connection_Exec_Delete(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 	id, _ := insertTestData(t, conn)
 
 	affectedRows, err := conn.Exec(context.Background(), "DELETE FROM my_table WHERE id = $1", id)
@@ -100,7 +100,7 @@ func TestIT_Connection_Exec_Delete(t *testing.T) {
 }
 
 func TestIT_Connection_Exec_WithArguments(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	affectedRows, err := conn.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE name = $1", "test-name")
 
@@ -110,7 +110,7 @@ func TestIT_Connection_Exec_WithArguments(t *testing.T) {
 }
 
 func TestIT_Connection_Exec_WrongSyntax(t *testing.T) {
-	conn := NewTestConnection(t)
+	conn := newTestConnection(t)
 
 	affectedRows, err := conn.Exec(context.Background(), "DESELECT COUNT(*) FROM my_table WHERE name = 'test-name'")
 

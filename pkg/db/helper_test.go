@@ -11,7 +11,7 @@ import (
 
 var dbTestConfig = postgresql.NewConfigForLocalhost("test_db", "test_user", "test_password")
 
-func NewTestConnection(t *testing.T) Connection {
+func newTestConnection(t *testing.T) Connection {
 	conn, err := New(context.Background(), dbTestConfig)
 	require.Nil(t, err)
 	return conn

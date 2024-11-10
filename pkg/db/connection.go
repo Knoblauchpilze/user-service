@@ -62,7 +62,7 @@ func (ci *connectionImpl) Exec(ctx context.Context, sql string, arguments ...any
 	return tag.RowsAffected(), err
 }
 
-func (ci *connectionImpl) Query(ctx context.Context, sql string, arguments ...any) (jpgx.Rows, error) {
+func (ci *connectionImpl) query(ctx context.Context, sql string, arguments ...any) (jpgx.Rows, error) {
 	if ci.pool == nil {
 		return nil, errors.NewCode(NotConnected)
 	}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/jackc/pgx/v5"
@@ -19,7 +20,6 @@ func QueryOne[T any](ctx context.Context, conn Connection, sql string, arguments
 		return out, errors.WrapCode(err, QueryOneFailure)
 	}
 
-	// https://pkg.go.dev/github.com/jackc/pgx/v5#RowToStructByName
 	out, err = pgx.CollectExactlyOneRow(rows, getCollectorForType[T]())
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -45,10 +45,21 @@ func QueryAll[T any](ctx context.Context, conn Connection, sql string, arguments
 		return out, errors.WrapCode(err, QueryAllFailure)
 	}
 
-	out, err = pgx.CollectRows(rows, pgx.RowToStructByName[T])
+	out, err = pgx.CollectRows(rows, getCollectorForType[T]())
 	if err != nil {
 		return out, errors.WrapCode(err, QueryAllFailure)
 	}
 
 	return out, nil
+}
+
+func getCollectorForType[T any]() pgx.RowToFunc[T] {
+	var value T
+
+	// https://pkg.go.dev/github.com/jackc/pgx/v5#RowToStructByName
+	if reflect.ValueOf(value).Kind() == reflect.Struct {
+		return pgx.RowToStructByName[T]
+	}
+
+	return pgx.RowTo[T]
 }

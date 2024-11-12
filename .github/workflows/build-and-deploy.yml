@@ -22,6 +22,9 @@ jobs:
           sed -i 's/func //g' all_tests.txt
           grep -vE '^Test(Unit|IT)_' all_tests.txt > not_matching.txt || [[ $? == 1 ]]
           FAILURES=$(wc -l < not_matching.txt)
+          echo $FAILURES
+          echo $(cat all_tests.txt)
+          echo $(cat not_matching.txt)
           if [[ ${FAILURES} -ne 0 ]]; then
             echo 'failed=true' >> $GITHUB_OUTPUT
           fi

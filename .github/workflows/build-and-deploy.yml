@@ -23,7 +23,7 @@ jobs:
           grep -vE '^Test(Unit|IT)_' all_tests.txt > not_matching.txt || [[ $? == 1 ]]
           echo 'failures=$(wc -l < not_matching.txt)' >> $GITHUB_OUTPUT
       - name: Fail if some do not match
-        if: ${{ steps.matching.outputs.failures != '0' }}
+        if: ${{ steps.matching.outputs.failures != 0 }}
         # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#example-setting-an-error-message
         run: |
           echo "failures: ${{ steps.matching.outputs.failures }}"

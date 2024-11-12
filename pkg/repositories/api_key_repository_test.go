@@ -23,7 +23,7 @@ func TestIT_ApiKeyRepository_Create(t *testing.T) {
 		Key:     uuid.New(),
 		ApiUser: user.Id,
 
-		ValidUntil: time.Date(2024, 12, 11, 18, 32, 20, 0, time.UTC),
+		ValidUntil: time.Date(2024, 11, 12, 18, 32, 20, 0, time.UTC),
 	}
 
 	actual, err := repo.Create(context.Background(), apiKey)
@@ -43,7 +43,7 @@ func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectKeyIsReturned(t *
 		Key:     uuid.New(),
 		ApiUser: uuid.MustParse("4f26321f-d0ea-46a3-83dd-6aa1c6053aaf"),
 
-		ValidUntil: time.Date(2024, 12, 11, 18, 34, 40, 0, time.UTC),
+		ValidUntil: time.Date(2024, 11, 12, 18, 34, 40, 0, time.UTC),
 	}
 
 	actual, err := repo.Create(context.Background(), apiKey)
@@ -66,7 +66,7 @@ func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectValidityExtended(
 		Key:     old.Key,
 		ApiUser: old.ApiUser,
 
-		ValidUntil: time.Date(2024, 12, 11, 18, 34, 40, 0, time.UTC),
+		ValidUntil: time.Date(2024, 11, 12, 18, 34, 40, 0, time.UTC),
 	}
 
 	actual, err := repo.Create(context.Background(), apiKey)
@@ -213,7 +213,7 @@ func assertApiKeyDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {
 func insertTestApiKey(t *testing.T, conn db.Connection) (persistence.User, persistence.ApiKey) {
 	user := insertTestUser(t, conn)
 
-	someTime := time.Date(2024, 12, 11, 18, 49, 35, 0, time.UTC)
+	someTime := time.Date(2024, 11, 12, 18, 49, 35, 0, time.UTC)
 
 	apiKey := persistence.ApiKey{
 		Id:         uuid.New(),

@@ -33,7 +33,7 @@ func assertUserDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {
 }
 
 func insertTestUser(t *testing.T, conn db.Connection) persistence.User {
-	someTime := time.Date(2024, 12, 11, 17, 55, 30, 0, time.UTC)
+	someTime := time.Date(2024, 11, 12, 17, 55, 30, 0, time.UTC)
 
 	user := persistence.User{
 		Id:        uuid.New(),

@@ -19,6 +19,7 @@ jobs:
         run: |
           grep -rh 'func Test' --include *_test.go > all_tests.txt
           sed -i 's/func //g' all_tests.txt
+          grep -vE '^Test(Unit|IT)_' all_tests.txt > not_matching.txt
       - name: Fail if some do not match
         if: ${{ steps.matching.outputs.failures != '0' }}
         # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#example-setting-an-error-message

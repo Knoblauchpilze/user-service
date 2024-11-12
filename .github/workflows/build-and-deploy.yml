@@ -80,7 +80,7 @@ jobs:
             -v admin_password=$ADMIN_PASSWORD \
             -v manager_password=$MANAGER_PASSWORD \
             -v user_password=$USER_PASSWORD \
-            -f test/db_user_create.sql
+            -f users/db_user_create.sql
           psql \
             postgresql://postgres@localhost \
             -f users/db_create.sql

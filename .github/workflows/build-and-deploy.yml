@@ -22,14 +22,11 @@ jobs:
           sed -i 's/func //g' all_tests.txt
           grep -vE '^Test(Unit|IT)_' all_tests.txt > not_matching.txt || [[ $? == 1 ]]
           FAILURES=$(wc -l < not_matching.txt)
-          echo $FAILURES
-          echo $(cat all_tests.txt)
-          echo $(cat not_matching.txt)
           if [[ ${FAILURES} -ne 0 ]]; then
             echo 'failed=true' >> $GITHUB_OUTPUT
           fi
       - name: Fail if some do not match
-        if: ${{ steps.matching.outputs.failures == 'true' }}
+        if: ${{ steps.matching.outputs.failed == 'true' }}
         # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#example-setting-an-error-message
         run: |
           echo "::error ::Detected at least one test not matching the naming convention!"

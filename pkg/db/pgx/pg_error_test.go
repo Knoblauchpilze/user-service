@@ -56,7 +56,7 @@ func TestUnit_AnalyzeAndWrapPgError(t *testing.T) {
 
 			actual := AnalyzeAndWrapPgError(err)
 
-			assert.True(errors.IsErrorWithCode(actual, testCase.expectedError))
+			assert.True(errors.IsErrorWithCode(actual, testCase.expectedError), "Actual err: %v", err)
 			cause := errors.Unwrap(actual)
 			assert.Equal(err, cause)
 		})

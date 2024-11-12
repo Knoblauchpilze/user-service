@@ -49,7 +49,7 @@ func TestIT_UserRepository_Create_WhenDuplicateName_ExpectFailure(t *testing.T) 
 
 	_, err := repo.Create(context.Background(), user)
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation))
+	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 }
 
 func TestIT_UserRepository_Get(t *testing.T) {
@@ -73,7 +73,7 @@ func TestIT_UserRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.Get(context.Background(), id)
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_UserRepository_GetByEmail(t *testing.T) {
@@ -94,7 +94,7 @@ func TestIT_UserRepository_GetByEmail_WhenNotFound_ExpectFailure(t *testing.T) {
 
 	_, err := repo.GetByEmail(context.Background(), "not-an-email")
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_UserRepository_List(t *testing.T) {
@@ -142,7 +142,7 @@ func TestIT_UserRepository_Update_WhenNameAlreadyExists_ExpectFailure(t *testing
 	_, err := repo.Update(context.Background(), updatedUser)
 
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation))
+	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 }
 
 func TestIT_UserRepository_Update_WhenVersionIsWrong_ExpectOptimisticLockException(t *testing.T) {
@@ -157,7 +157,7 @@ func TestIT_UserRepository_Update_WhenVersionIsWrong_ExpectOptimisticLockExcepti
 	_, err := repo.Update(context.Background(), updatedUser)
 
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, OptimisticLockException))
+	assert.True(errors.IsErrorWithCode(err, OptimisticLockException), "Actual err: %v", err)
 }
 
 func TestIT_UserRepository_Update_BumpsUpdatedAt(t *testing.T) {

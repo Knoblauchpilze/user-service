@@ -21,7 +21,7 @@ func TestUnit_QueryOne_UnsupportedConnection(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation))
+	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation), "Actual err: %v", err)
 }
 
 func TestIT_QueryOne_WhenClosed_ExpectFailure(t *testing.T) {
@@ -32,7 +32,7 @@ func TestIT_QueryOne_WhenClosed_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, NotConnected))
+	assert.True(errors.IsErrorWithCode(err, NotConnected), "Actual err: %v", err)
 }
 
 func TestIT_QueryOne_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -43,7 +43,7 @@ func TestIT_QueryOne_WhenConnectionFails_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 
 	cause := errors.Unwrap(err)
 	assert.NotNil(cause)
@@ -61,7 +61,7 @@ func TestIT_QueryOne_WhenNoData_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, NoMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_QueryOne_WhenTooManyRows_ExpectFailure(t *testing.T) {
@@ -76,7 +76,7 @@ func TestIT_QueryOne_WhenTooManyRows_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, TooManyMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, TooManyMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_QueryOne_ToStruct(t *testing.T) {
@@ -127,7 +127,7 @@ func TestIT_QueryAll_UnsupportedConnection(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation))
+	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation), "Actual err: %v", err)
 }
 
 func TestIT_QueryAll_WhenClosed_ExpectFailure(t *testing.T) {
@@ -138,7 +138,7 @@ func TestIT_QueryAll_WhenClosed_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, NotConnected))
+	assert.True(errors.IsErrorWithCode(err, NotConnected), "Actual err: %v", err)
 }
 
 func TestIT_QueryAll_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -149,7 +149,7 @@ func TestIT_QueryAll_WhenConnectionFails_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 
 	cause := errors.Unwrap(err)
 	assert.NotNil(cause)

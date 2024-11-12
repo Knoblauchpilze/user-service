@@ -103,7 +103,7 @@ func TestIT_ApiKeyRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.Get(context.Background(), id)
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_GetForKey(t *testing.T) {
@@ -128,7 +128,7 @@ func TestIT_ApiKeyRepository_GetForKey_WhenNotFound_ExpectFailure(t *testing.T) 
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.GetForKey(context.Background(), id)
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_GetForUser(t *testing.T) {
@@ -153,7 +153,7 @@ func TestIT_ApiKeyRepository_GetForUser_WhenNotFound_ExpectFailure(t *testing.T)
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.GetForUser(context.Background(), id)
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_Delete(t *testing.T) {

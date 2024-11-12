@@ -19,7 +19,7 @@ func TestUnit_QueryOneTx_UnsupportedConnection(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation))
+	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation), "Actual err: %v", err)
 }
 
 func TestIT_QueryOneTx_WhenCommitted_ExpectFailure(t *testing.T) {
@@ -30,7 +30,7 @@ func TestIT_QueryOneTx_WhenCommitted_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted))
+	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
 }
 
 func TestIT_QueryOneTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -41,7 +41,7 @@ func TestIT_QueryOneTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 
 	cause := errors.Unwrap(err)
 	assert.NotNil(cause)
@@ -59,7 +59,7 @@ func TestIT_QueryOneTx_WhenNoData_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, NoMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_QueryOneTx_WhenTooManyRows_ExpectFailure(t *testing.T) {
@@ -74,7 +74,7 @@ func TestIT_QueryOneTx_WhenTooManyRows_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, TooManyMatchingRows))
+	assert.True(errors.IsErrorWithCode(err, TooManyMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_QueryOneTx_ToStruct(t *testing.T) {
@@ -125,7 +125,7 @@ func TestIT_QueryAllTx_UnsupportedConnection(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation))
+	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation), "Actual err: %v", err)
 }
 
 func TestIT_QueryAllTx_WhenCommitted_ExpectFailure(t *testing.T) {
@@ -136,7 +136,7 @@ func TestIT_QueryAllTx_WhenCommitted_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted))
+	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
 }
 
 func TestIT_QueryAllTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -147,7 +147,7 @@ func TestIT_QueryAllTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 
 	cause := errors.Unwrap(err)
 	assert.NotNil(cause)

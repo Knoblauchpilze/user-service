@@ -50,7 +50,7 @@ func TestIT_Connection_Close(t *testing.T) {
 	conn.Close(context.Background())
 	err = conn.Ping(context.Background())
 	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, NotConnected))
+	assert.True(errors.IsErrorWithCode(err, NotConnected), "Actual err: %v", err)
 }
 
 func TestIT_Connection_BeginTx_TimeStampIsValid(t *testing.T) {
@@ -72,7 +72,7 @@ func TestIT_Connection_BeginTx_ClosedConnection(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Nil(tx)
-	assert.True(errors.IsErrorWithCode(err, NotConnected))
+	assert.True(errors.IsErrorWithCode(err, NotConnected), "Actual err: %v", err)
 }
 
 func TestIT_Connection_Exec_Select(t *testing.T) {
@@ -108,7 +108,7 @@ func TestIT_Connection_Exec_InsertDuplicate(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation))
+	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 }
 
 func TestIT_Connection_Exec_Update(t *testing.T) {
@@ -131,7 +131,7 @@ func TestIT_Connection_Exec_UpdateDuplicate(t *testing.T) {
 	affectedRows, err := conn.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", "test-name", id)
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation))
+	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 
 	assertNameForId(t, conn, id, name.String())
 }
@@ -165,5 +165,5 @@ func TestIT_Connection_Exec_WrongSyntax(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 }

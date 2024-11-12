@@ -19,7 +19,7 @@ func TestIT_Transaction_Exec_AlreadyCommitted(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted))
+	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
 }
 
 func TestIT_Transaction_Exec_Select(t *testing.T) {
@@ -92,7 +92,7 @@ func TestIT_Transaction_Exec_WrongSyntax(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError))
+	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 }
 
 func TestIT_Transaction_Exec_WhenError_ExpectRollback(t *testing.T) {

@@ -160,7 +160,7 @@ func TestIT_UserRepository_Update_WhenVersionIsWrong_ExpectOptimisticLockExcepti
 	assert.True(errors.IsErrorWithCode(err, OptimisticLockException), "Actual err: %v", err)
 }
 
-func TestIT_UserRepository_Update_BumpsUpdatedAt(t *testing.T) {
+func TestITs_UserRepository_Update_BumpsUpdatedAt(t *testing.T) {
 	repo, conn := newTestUserRepository(t)
 
 	user := insertTestUser(t, conn)

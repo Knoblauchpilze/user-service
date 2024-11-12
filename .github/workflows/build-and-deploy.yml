@@ -29,8 +29,8 @@ jobs:
         if: ${{ steps.matching.outputs.failures == 'true' }}
         # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#example-setting-an-error-message
         run: |
-          echo "failures: ${{ steps.matching.outputs.failures }}"
           echo "::error ::Detected at least one test not matching the naming convention!"
+          exit 1
 
   tests:
     runs-on: ubuntu-latest

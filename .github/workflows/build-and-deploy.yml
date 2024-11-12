@@ -16,10 +16,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Detect tests not matching naming pattern
         id: matching
+        # https://unix.stackexchange.com/questions/330660/preventing-grep-from-causing-premature-termination-of-bash-e-script
         run: |
           grep -rh 'func Test' --include *_test.go > all_tests.txt
           sed -i 's/func //g' all_tests.txt
-          grep --version
+          grep -vE '^Test(Unit|IT)_' all_tests.txt > not_matching.txt || [[ $? == 1 ]]
+          echo 'failures=$(wc -l < not_matching.txt)'' >> $GITHUB_OUTPUT
       - name: Fail if some do not match
         if: ${{ steps.matching.outputs.failures != '0' }}
         # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#example-setting-an-error-message

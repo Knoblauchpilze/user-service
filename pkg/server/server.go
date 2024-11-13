@@ -15,7 +15,6 @@ import (
 )
 
 type Server interface {
-	Port() uint16
 	AddRoute(route rest.Route) error
 	Start(ctx context.Context) error
 }
@@ -38,10 +37,6 @@ func New(config Config) Server {
 	}
 
 	return s
-}
-
-func (s *serverImpl) Port() uint16 {
-	return s.port
 }
 
 func (s *serverImpl) AddRoute(route rest.Route) error {
@@ -81,10 +76,6 @@ func (s *serverImpl) Start(ctx context.Context) error {
 
 	const reasonableWaitTimeToInitializeServer = 50 * time.Millisecond
 	time.Sleep(reasonableWaitTimeToInitializeServer)
-
-	if port, err := determinePort(s.echo.Listener.Addr()); err == nil {
-		s.port = port
-	}
 
 	<-notifyCtx.Done()
 

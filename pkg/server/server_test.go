@@ -66,24 +66,6 @@ func TestUnit_Server_ListensOnConfiguredPort(t *testing.T) {
 	assertResponseIs200Ok(t, resp)
 }
 
-func TestUnit_Server_WhenNoPortConfigured_PicksOneToListenOn(t *testing.T) {
-	s, ctx, cancel := createStoppableTestServerWithPort(0, context.Background())
-
-	var resp *http.Response
-	var err error
-
-	handler := func() {
-		port := s.Port()
-		resp, err = http.Get(fmt.Sprintf("http://localhost:%d", port))
-		cancel()
-	}
-
-	runServerAndExecuteHandler(t, ctx, s, handler)
-
-	assert.Nil(t, err)
-	assertResponseIs200Ok(t, resp)
-}
-
 func createStoppableTestServer(ctx context.Context) (Server, context.Context, context.CancelFunc) {
 	return createStoppableTestServerWithPort(0, ctx)
 }

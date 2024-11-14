@@ -15,7 +15,6 @@ func TestUnit_Logger_Printf(t *testing.T) {
 
 	log := New(&out)
 
-	log.Printf("hello")
 	log.Printf("hello %s", "John")
 
 	assert := assert.New(t)

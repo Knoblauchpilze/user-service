@@ -28,5 +28,5 @@ See the following links:
 We also assume that this repository is cloned locally and available to use. To achieve this, just use the following command:
 
 ```bash
-git clone git@github.com:Knoblauchpilze/user-service.git`
+git clone git@github.com:Knoblauchpilze/user-service.git
 ```

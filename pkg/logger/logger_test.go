@@ -68,7 +68,7 @@ func TestUnit_Logger_Tracef(t *testing.T) {
 	log.Tracef("hello %s", "John")
 
 	assert := assert.New(t)
-	traceRegex := regexp.MustCompile(`{"level":"trace","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+)?","message":"hello John"}`)
+	traceRegex := regexp.MustCompile(`{"level":"trace","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
 	assert.Regexp(traceRegex, out.String())
 }
 
@@ -80,7 +80,7 @@ func TestUnit_Logger_Debugf(t *testing.T) {
 	log.Debugf("hello %s", "John")
 
 	assert := assert.New(t)
-	traceRegex := regexp.MustCompile(`{"level":"debug","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+)?","message":"hello John"}`)
+	traceRegex := regexp.MustCompile(`{"level":"debug","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
 	assert.Regexp(traceRegex, out.String())
 }
 
@@ -92,7 +92,7 @@ func TestUnit_Logger_Infof(t *testing.T) {
 	log.Infof("hello %s", "John")
 
 	assert := assert.New(t)
-	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+)?","message":"hello John"}`)
+	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
 	assert.Regexp(traceRegex, out.String())
 }
 
@@ -104,7 +104,7 @@ func TestUnit_Logger_Warnf(t *testing.T) {
 	log.Warnf("hello %s", "John")
 
 	assert := assert.New(t)
-	traceRegex := regexp.MustCompile(`{"level":"warn","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+)?","message":"hello John"}`)
+	traceRegex := regexp.MustCompile(`{"level":"warn","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
 	assert.Regexp(traceRegex, out.String())
 }
 
@@ -116,7 +116,7 @@ func TestUnit_Logger_Errorf(t *testing.T) {
 	log.Errorf("hello %s", "John")
 
 	assert := assert.New(t)
-	traceRegex := regexp.MustCompile(`{"level":"error","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+)?","message":"hello John"}`)
+	traceRegex := regexp.MustCompile(`{"level":"error","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
 	assert.Regexp(traceRegex, out.String())
 }
 
@@ -141,7 +141,7 @@ func TestUnit_Logger_WhenOnlyPrefixIsSet_ExpectItToBeLogged(t *testing.T) {
 	log.Infof("hello %s", "John")
 
 	assert := assert.New(t)
-	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+)?","message":"\[my-prefix\] hello John"}`)
+	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"\[my-prefix\] hello John"}`)
 	assert.Regexp(traceRegex, out.String())
 }
 
@@ -154,7 +154,7 @@ func TestUnit_Logger_WhenOnlyHeaderIsSet_ExpectItToBeLogged(t *testing.T) {
 	log.Infof("hello %s", "John")
 
 	assert := assert.New(t)
-	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+)?","message":"\[my-header\] hello John"}`)
+	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"\[my-header\] hello John"}`)
 	assert.Regexp(traceRegex, out.String())
 }
 
@@ -168,7 +168,7 @@ func TestUnit_Logger_WhenBothPrefixHeaderIsSet_ExpectThemToBeLoggedInTheRightOrd
 	log.Infof("hello %s", "John")
 
 	assert := assert.New(t)
-	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+)?","message":"\[my-header\] \[my-prefix\] hello John"}`)
+	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"\[my-header\] \[my-prefix\] hello John"}`)
 	assert.Regexp(traceRegex, out.String())
 }
 

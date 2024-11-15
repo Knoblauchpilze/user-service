@@ -19,7 +19,6 @@ type UserService interface {
 	Update(ctx context.Context, id uuid.UUID, userDto communication.UserDtoRequest) (communication.UserDtoResponse, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	Login(ctx context.Context, userDto communication.UserDtoRequest) (communication.ApiKeyDtoResponse, error)
-	LoginById(ctx context.Context, id uuid.UUID) (communication.ApiKeyDtoResponse, error)
 	Logout(ctx context.Context, id uuid.UUID) error
 }
 
@@ -126,28 +125,6 @@ func (s *userServiceImpl) Login(ctx context.Context, user communication.UserDtoR
 		Id:         uuid.New(),
 		Key:        uuid.New(),
 		ApiUser:    dbUser.Id,
-		ValidUntil: time.Now().Add(s.apiKeyValidity),
-	}
-
-	createdKey, err := s.apiKeyRepo.Create(ctx, apiKey)
-	if err != nil {
-		return communication.ApiKeyDtoResponse{}, err
-	}
-
-	out := communication.ToApiKeyDtoResponse(createdKey)
-	return out, nil
-}
-
-func (s *userServiceImpl) LoginById(ctx context.Context, id uuid.UUID) (communication.ApiKeyDtoResponse, error) {
-	user, err := s.userRepo.Get(ctx, id)
-	if err != nil {
-		return communication.ApiKeyDtoResponse{}, err
-	}
-
-	apiKey := persistence.ApiKey{
-		Id:         uuid.New(),
-		Key:        uuid.New(),
-		ApiUser:    user.Id,
 		ValidUntil: time.Now().Add(s.apiKeyValidity),
 	}
 

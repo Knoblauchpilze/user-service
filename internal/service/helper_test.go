@@ -23,21 +23,26 @@ func newTestConnection(t *testing.T) db.Connection {
 }
 
 func insertTestUser(t *testing.T, conn db.Connection) persistence.User {
-	userRepo := repositories.NewUserRepository(conn)
+	repo := repositories.NewUserRepository(conn)
 
 	id := uuid.New()
 	user := persistence.User{
-		Id:       id,
-		Email:    fmt.Sprintf("my-user-%s", id),
-		Password: "my-password",
+		Id:        id,
+		Email:     fmt.Sprintf("my-user-%s", id),
+		Password:  "my-password",
+		CreatedAt: time.Now(),
 	}
-	out, err := userRepo.Create(context.Background(), user)
+	out, err := repo.Create(context.Background(), user)
 	require.Nil(t, err)
+
+	assertUserExists(t, conn, out.Id)
 
 	return out
 }
 
-func insertApiKeyForUser(t *testing.T, userId uuid.UUID, repo repositories.ApiKeyRepository) persistence.ApiKey {
+func insertApiKeyForUser(t *testing.T, conn db.Connection, userId uuid.UUID) persistence.ApiKey {
+	repo := repositories.NewApiKeyRepository(conn)
+
 	apiKey := persistence.ApiKey{
 		Id:         uuid.New(),
 		Key:        uuid.New(),
@@ -48,5 +53,31 @@ func insertApiKeyForUser(t *testing.T, userId uuid.UUID, repo repositories.ApiKe
 	out, err := repo.Create(context.Background(), apiKey)
 	require.Nil(t, err)
 
+	assertApiKeyExists(t, conn, out.Id)
+
 	return out
+}
+
+func assertApiKeyExists(t *testing.T, conn db.Connection, id uuid.UUID) {
+	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT id FROM api_key WHERE id = $1", id)
+	require.Nil(t, err)
+	require.Equal(t, id, value)
+}
+
+func assertApiKeyDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {
+	value, err := db.QueryOne[int](context.Background(), conn, "SELECT COUNT(id) FROM api_key WHERE id = $1", id)
+	require.Nil(t, err)
+	require.Zero(t, value)
+}
+
+func assertUserExists(t *testing.T, conn db.Connection, id uuid.UUID) {
+	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT id FROM api_user WHERE id = $1", id)
+	require.Nil(t, err)
+	require.Equal(t, id, value)
+}
+
+func assertUserDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {
+	value, err := db.QueryOne[int](context.Background(), conn, "SELECT COUNT(id) FROM api_user WHERE id = $1", id)
+	require.Nil(t, err)
+	require.Zero(t, value)
 }

@@ -41,13 +41,17 @@ func insertTestUser(t *testing.T, conn db.Connection) persistence.User {
 }
 
 func insertApiKeyForUser(t *testing.T, conn db.Connection, userId uuid.UUID) persistence.ApiKey {
+	return insertApiKeyForUserWithValidity(t, conn, userId, time.Now().Add(3*time.Hour))
+}
+
+func insertApiKeyForUserWithValidity(t *testing.T, conn db.Connection, userId uuid.UUID, validity time.Time) persistence.ApiKey {
 	repo := repositories.NewApiKeyRepository(conn)
 
 	apiKey := persistence.ApiKey{
 		Id:         uuid.New(),
 		Key:        uuid.New(),
 		ApiUser:    userId,
-		ValidUntil: time.Now().Add(3 * time.Hour),
+		ValidUntil: validity,
 	}
 
 	out, err := repo.Create(context.Background(), apiKey)
@@ -62,6 +66,12 @@ func assertApiKeyExists(t *testing.T, conn db.Connection, id uuid.UUID) {
 	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT id FROM api_key WHERE id = $1", id)
 	require.Nil(t, err)
 	require.Equal(t, id, value)
+}
+
+func assertApiKeyExistsByKey(t *testing.T, conn db.Connection, key uuid.UUID) {
+	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT key FROM api_key WHERE key = $1", key)
+	require.Nil(t, err)
+	require.Equal(t, key, value)
 }
 
 func assertApiKeyDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {

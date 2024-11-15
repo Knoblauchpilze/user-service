@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUnit_UserService_Create(t *testing.T) {
+func TestIT_UserService_Create(t *testing.T) {
 	id := uuid.New()
 	userDtoRequest := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("my-user-%s", id),
@@ -33,7 +33,7 @@ func TestUnit_UserService_Create(t *testing.T) {
 	assertUserExists(t, conn, out.Id)
 }
 
-func TestUnit_UserService_Create_InvalidEmail(t *testing.T) {
+func TestIT_UserService_Create_InvalidEmail(t *testing.T) {
 	userDtoRequest := communication.UserDtoRequest{
 		Email:    "",
 		Password: "my-password",
@@ -46,7 +46,7 @@ func TestUnit_UserService_Create_InvalidEmail(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, InvalidEmail), "Actual err: %v", err)
 }
 
-func TestUnit_UserService_Create_InvalidPassword(t *testing.T) {
+func TestIT_UserService_Create_InvalidPassword(t *testing.T) {
 	userDtoRequest := communication.UserDtoRequest{
 		Email:    "my-username",
 		Password: "",
@@ -59,7 +59,7 @@ func TestUnit_UserService_Create_InvalidPassword(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, InvalidPassword), "Actual err: %v", err)
 }
 
-func TestUnit_UserService_Create_WhenUserAlreadyExists_ExpectFailure(t *testing.T) {
+func TestIT_UserService_Create_WhenUserAlreadyExists_ExpectFailure(t *testing.T) {
 	service, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 	userDtoRequest := communication.UserDtoRequest{
@@ -73,7 +73,7 @@ func TestUnit_UserService_Create_WhenUserAlreadyExists_ExpectFailure(t *testing.
 	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 }
 
-func TestUnit_UserService_Get(t *testing.T) {
+func TestIT_UserService_Get(t *testing.T) {
 	service, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 
@@ -86,7 +86,7 @@ func TestUnit_UserService_Get(t *testing.T) {
 	assert.Equal(user.Password, actual.Password)
 }
 
-func TestUnit_UserService_Get_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+func TestIT_UserService_Get_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
 	nonExistingId := uuid.MustParse("00000000-0000-1221-0000-000000000000")
 
 	service, _ := newTestUserRepository(t)
@@ -96,7 +96,7 @@ func TestUnit_UserService_Get_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows))
 }
 
-func TestUnit_UserService_List(t *testing.T) {
+func TestIT_UserService_List(t *testing.T) {
 	service, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 
@@ -107,7 +107,7 @@ func TestUnit_UserService_List(t *testing.T) {
 	assert.Contains(ids, user.Id)
 }
 
-func TestUnit_UserService_Update(t *testing.T) {
+func TestIT_UserService_Update(t *testing.T) {
 	service, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 
@@ -130,7 +130,7 @@ func TestUnit_UserService_Update(t *testing.T) {
 	assert.Equal(updatedUser.Password, actual.Password)
 }
 
-func TestUnit_UserService_Update_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+func TestIT_UserService_Update_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
 	nonExistentId := uuid.New()
 	updatedUser := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("updated-email-%s", nonExistentId),
@@ -144,7 +144,7 @@ func TestUnit_UserService_Update_WhenUserDoesNotExist_ExpectFailure(t *testing.T
 	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
-func TestUnit_UserService_Update_WhenUpdateFails_ExpectFailure(t *testing.T) {
+func TestIT_UserService_Update_WhenUpdateFails_ExpectFailure(t *testing.T) {
 	service, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 	otherUser := insertTestUser(t, conn)
@@ -160,7 +160,7 @@ func TestUnit_UserService_Update_WhenUpdateFails_ExpectFailure(t *testing.T) {
 	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 }
 
-func TestUnit_UserService_Delete(t *testing.T) {
+func TestIT_UserService_Delete(t *testing.T) {
 	service, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 
@@ -171,7 +171,7 @@ func TestUnit_UserService_Delete(t *testing.T) {
 	assertUserDoesNotExist(t, conn, user.Id)
 }
 
-func TestUnit_UserService_Delete_WhenUserDoesNotExist_ExpectSuccess(t *testing.T) {
+func TestIT_UserService_Delete_WhenUserDoesNotExist_ExpectSuccess(t *testing.T) {
 	nonExistingId := uuid.MustParse("00000000-0000-1221-0000-000000000000")
 
 	service, _ := newTestUserRepository(t)
@@ -181,7 +181,7 @@ func TestUnit_UserService_Delete_WhenUserDoesNotExist_ExpectSuccess(t *testing.T
 	assert.Nil(err)
 }
 
-func TestUnit_UserService_Delete_WhenUserIsLoggedIn_ExpectApiKeyAlsoDeleted(t *testing.T) {
+func TestIT_UserService_Delete_WhenUserIsLoggedIn_ExpectApiKeyAlsoDeleted(t *testing.T) {
 	service, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 	apiKey := insertApiKeyForUser(t, conn, user.Id)

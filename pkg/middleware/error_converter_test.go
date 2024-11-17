@@ -23,22 +23,34 @@ func TestUnit_ErrorConverter_WrapsUnknownErrorIntoHttpError(t *testing.T) {
 	next := createErrorHandler(fmt.Errorf("some error"))
 	middleware := ErrorConverter()
 	callable := middleware(next)
-	ctx, _ := generateTestEchoContext()
+	ctx, rw := generateTestEchoContext()
 
 	err := callable(ctx)
 
-	assertIsHttpErrorWithMessageAndCode(t, err, "some error", http.StatusInternalServerError)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusInternalServerError, rw.Code)
+	expected := `
+	{
+		"message": "some error"
+	}`
+	assert.JSONEq(t, expected, rw.Body.String())
 }
 
 func TestUnit_ErrorConverter_WrapsErrorWithCodeIntoHttpError(t *testing.T) {
 	next := createErrorHandler(errors.NewCode(UncaughtPanic))
 	middleware := ErrorConverter()
 	callable := middleware(next)
-	ctx, _ := generateTestEchoContext()
+	ctx, rw := generateTestEchoContext()
 
 	err := callable(ctx)
 
-	assertIsHttpErrorWithMessageAndCode(t, err, "An unexpected error occurred. Code: 400", http.StatusInternalServerError)
+	assert.Nil(t, err)
+	assert.Equal(t, http.StatusInternalServerError, rw.Code)
+	expected := `
+	{
+		"message": "An unexpected error occurred. Code: 400"
+	}`
+	assert.JSONEq(t, expected, rw.Body.String())
 }
 
 func createErrorHandler(err error) echo.HandlerFunc {

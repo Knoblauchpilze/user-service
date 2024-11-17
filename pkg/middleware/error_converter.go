@@ -7,9 +7,8 @@ import (
 func ErrorConverter() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			err := next(c)
-			if err != nil {
-				return wrapToHttpError(err)
+			if err := next(c); err != nil {
+				c.Error(wrapToHttpError(err))
 			}
 
 			return nil

@@ -36,7 +36,7 @@ func TestUnit_RequestLogger_PrintsRequestTiming(t *testing.T) {
 	assert.Equal("info", actual.Level)
 	safetyMargin := 5 * time.Second
 	assert.True(areTimeCloserThan(actual.Time, afterCall, safetyMargin), "%v and %v are not within %v", afterCall, actual.Time, safetyMargin)
-	assert.Regexp(`GET example.com/ processed in [0-9]+\.([0-9]+)([mµn])?s -> \x1b\[1;32m200\x1b\[0m`, actual.Message)
+	assert.Regexp(`GET example.com/ processed in [0-9]+(\.[0-9]+)?([mµn])?s -> \x1b\[1;32m200\x1b\[0m`, actual.Message)
 }
 
 func areTimeCloserThan(t1 time.Time, t2 time.Time, distance time.Duration) bool {

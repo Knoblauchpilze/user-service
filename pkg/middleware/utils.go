@@ -1,6 +1,12 @@
 package middleware
 
-import "github.com/KnoblauchPilze/user-service/pkg/logger"
+import (
+	"net/http"
+
+	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/KnoblauchPilze/user-service/pkg/logger"
+	"github.com/labstack/echo/v4"
+)
 
 func formatHttpStatusCode(status int) string {
 	switch {
@@ -12,5 +18,25 @@ func formatHttpStatusCode(status int) string {
 		return logger.FormatWithColor(status, logger.Cyan)
 	default:
 		return logger.FormatWithColor(status, logger.Green)
+	}
+}
+
+func wrapToHttpError(err error) error {
+	code := http.StatusInternalServerError
+	if errorWithCode, ok := err.(errors.ErrorWithCode); ok {
+		code = errorCodeToHttpErrorCode(errorWithCode.Code())
+	}
+
+	return &echo.HTTPError{
+		Code:     code,
+		Message:  err.Error(),
+		Internal: err,
+	}
+}
+
+func errorCodeToHttpErrorCode(code errors.ErrorCode) int {
+	switch code {
+	default:
+		return http.StatusInternalServerError
 	}
 }

@@ -1,11 +1,15 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"testing"
 
+	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUnit_FormatHttpStatusCode(t *testing.T) {
@@ -55,4 +59,36 @@ func TestUnit_FormatHttpStatusCode(t *testing.T) {
 			assert.Equal(t, testCase.expectedFormattedString, actual)
 		})
 	}
+}
+
+func TestUnit_WrapToHttpError(t *testing.T) {
+	err := fmt.Errorf("some error")
+
+	actual := wrapToHttpError(err)
+
+	assertIsHttpErrorWithMessageAndCode(t, actual, "some error", http.StatusInternalServerError)
+}
+
+func TestUnit_WrapToHttpError_ErrorWithCode(t *testing.T) {
+	err := errors.NewCode(UncaughtPanic)
+
+	actual := wrapToHttpError(err)
+
+	assertIsHttpErrorWithMessageAndCode(t, actual, "(400) An unexpected error occurred", http.StatusInternalServerError)
+}
+
+func TestUnit_WrapToHttpError_ErrorWithCodeWithCause(t *testing.T) {
+	err := errors.WrapCode(fmt.Errorf("some error"), UncaughtPanic)
+
+	actual := wrapToHttpError(err)
+
+	assertIsHttpErrorWithMessageAndCode(t, actual, "(400) An unexpected error occurred (cause: some error)", http.StatusInternalServerError)
+}
+
+func assertIsHttpErrorWithMessageAndCode(t *testing.T, err error, message string, httpCode int) {
+	httpErr, ok := err.(*echo.HTTPError)
+	require.True(t, ok)
+
+	require.Equal(t, httpCode, httpErr.Code)
+	require.Equal(t, message, httpErr.Message)
 }

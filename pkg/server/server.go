@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/KnoblauchPilze/user-service/pkg/logger"
 	"github.com/KnoblauchPilze/user-service/pkg/rest"
 	"github.com/labstack/echo/v4"
 )
@@ -27,13 +28,13 @@ type serverImpl struct {
 }
 
 func New(config Config) Server {
-	echo := createEchoServer()
+	echoServer := createEchoServer()
 
 	s := &serverImpl{
-		echo:            echo,
+		echo:            echoServer,
 		port:            config.Port,
 		shutdownTimeout: config.ShutdownTimeout,
-		router:          echo.Group(""),
+		router:          echoServer.Group(""),
 	}
 
 	return s
@@ -96,6 +97,7 @@ func createEchoServer() *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
+	e.Logger = logger.Wrap(logger.New(logger.NewPrettyWriter(os.Stdout)))
 
 	return e
 }

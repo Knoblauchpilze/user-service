@@ -16,7 +16,7 @@ type recoveredErrorData struct {
 }
 
 func Recover() echo.MiddlewareFunc {
-	recoverConfig := middleware.RecoverConfig{
+	config := middleware.RecoverConfig{
 		DisableStackAll: true,
 		LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
 			data := recoveredErrorData{
@@ -32,7 +32,7 @@ func Recover() echo.MiddlewareFunc {
 		},
 	}
 
-	return middleware.RecoverWithConfig(recoverConfig)
+	return middleware.RecoverWithConfig(config)
 }
 
 func createErrorLog(data recoveredErrorData) string {

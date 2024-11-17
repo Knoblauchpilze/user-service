@@ -9,7 +9,7 @@ import (
 )
 
 func RequestLogger() echo.MiddlewareFunc {
-	requestLoggingConfig := middleware.RequestLoggerConfig{
+	config := middleware.RequestLoggerConfig{
 		LogHost:    true,
 		LogMethod:  true,
 		LogURIPath: true,
@@ -21,7 +21,7 @@ func RequestLogger() echo.MiddlewareFunc {
 		},
 	}
 	// Voluntarily ignoring errors
-	logging, _ := requestLoggingConfig.ToMiddleware()
+	logging, _ := config.ToMiddleware()
 
 	return logging
 }

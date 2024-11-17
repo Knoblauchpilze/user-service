@@ -3,8 +3,6 @@ package rest
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 type envelopeResponseWriter struct {
@@ -12,7 +10,7 @@ type envelopeResponseWriter struct {
 	writer   http.ResponseWriter
 }
 
-func NewResponseEnvelopeWriter(w http.ResponseWriter, requestId uuid.UUID) *envelopeResponseWriter {
+func NewResponseEnvelopeWriter(w http.ResponseWriter, requestId string) *envelopeResponseWriter {
 	return &envelopeResponseWriter{
 		response: responseEnvelope{
 			RequestId: requestId,

@@ -5,11 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-var sampleRequestId = uuid.MustParse("b8e9de68-3d49-4d40-a9a6-f8f3d3eab8f1")
+const sampleRequestId = "b8e9de68-3d49-4d40-a9a6-f8f3d3eab8f1"
+
 var sampleJsonData = []byte(`{"value":12}`)
 
 func TestUnit_EnvelopeResponseWriter_AutomaticallySetsSuccessStatusWhenNoStatusIsUsed(t *testing.T) {

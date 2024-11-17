@@ -112,8 +112,8 @@ func IsErrorWithCode(err error, code ErrorCode) bool {
 func (e errorImpl) Error() string {
 	var out string
 
-	out += fmt.Sprintf("(%d) ", e.Value)
 	out += e.Message
+	out += fmt.Sprintf(". Code: %d", e.Value)
 
 	if e.Cause != nil {
 		out += fmt.Sprintf(" (cause: %v)", e.Cause.Error())

@@ -150,12 +150,12 @@ func TestUnit_Error_Error(t *testing.T) {
 
 	err := Wrapf(errSomeError, "context %d", -44)
 
-	expected := "(1) context -44 (cause: some error)"
+	expected := "context -44. Code: 1 (cause: some error)"
 	assert.Equal(expected, err.Error())
 
 	err = WrapCode(errSomeError, someCode)
 
-	expected = "(26) An unexpected error occurred (cause: some error)"
+	expected = "An unexpected error occurred. Code: 26 (cause: some error)"
 	assert.Equal(expected, err.Error())
 }
 

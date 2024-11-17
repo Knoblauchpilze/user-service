@@ -15,7 +15,7 @@ var sampleJsonData = []byte(`{"value":12}`)
 func TestUnit_EnvelopeResponseWriter_AutomaticallySetsSuccessStatusWhenNoStatusIsUsed(t *testing.T) {
 	out := httptest.NewRecorder()
 
-	rw := New(out, sampleRequestId)
+	rw := NewResponseEnvelopeWriter(out, sampleRequestId)
 
 	rw.Write(sampleJsonData)
 
@@ -37,7 +37,7 @@ func TestUnit_EnvelopeResponseWriter_ForwardsProvidedWriterHeaders(t *testing.T)
 
 	out.Header().Add("Key2", "other-value")
 
-	rw := New(out, sampleRequestId)
+	rw := NewResponseEnvelopeWriter(out, sampleRequestId)
 	actual := rw.Header()
 
 	expected := http.Header{
@@ -50,7 +50,7 @@ func TestUnit_EnvelopeResponseWriter_ForwardsProvidedWriterHeaders(t *testing.T)
 func TestUnit_EnvelopeResponseWriter_SetsStatusCodeOnCallToWriteHeader(t *testing.T) {
 	out := httptest.NewRecorder()
 
-	rw := New(out, sampleRequestId)
+	rw := NewResponseEnvelopeWriter(out, sampleRequestId)
 
 	rw.WriteHeader(http.StatusUnauthorized)
 
@@ -60,7 +60,7 @@ func TestUnit_EnvelopeResponseWriter_SetsStatusCodeOnCallToWriteHeader(t *testin
 func TestUnit_EnvelopeResponseWriter_WrapsSuccessResponse(t *testing.T) {
 	out := httptest.NewRecorder()
 
-	rw := New(out, sampleRequestId)
+	rw := NewResponseEnvelopeWriter(out, sampleRequestId)
 
 	rw.WriteHeader(http.StatusCreated)
 	rw.Write(sampleJsonData)
@@ -80,7 +80,7 @@ func TestUnit_EnvelopeResponseWriter_WrapsSuccessResponse(t *testing.T) {
 func TestUnit_EnvelopeResponseWriter_WrapsErrorResponse(t *testing.T) {
 	out := httptest.NewRecorder()
 
-	rw := New(out, sampleRequestId)
+	rw := NewResponseEnvelopeWriter(out, sampleRequestId)
 
 	rw.WriteHeader(http.StatusUnauthorized)
 	rw.Write(sampleJsonData)
@@ -100,7 +100,7 @@ func TestUnit_EnvelopeResponseWriter_WrapsErrorResponse(t *testing.T) {
 func TestUnit_EnvelopeResponseWriter_WrapsPlainDataAsDetailsString(t *testing.T) {
 	out := httptest.NewRecorder()
 
-	rw := New(out, sampleRequestId)
+	rw := NewResponseEnvelopeWriter(out, sampleRequestId)
 
 	rw.Write([]byte("some-data"))
 

@@ -12,7 +12,7 @@ type envelopeResponseWriter struct {
 	writer   http.ResponseWriter
 }
 
-func New(w http.ResponseWriter, requestId uuid.UUID) *envelopeResponseWriter {
+func NewResponseEnvelopeWriter(w http.ResponseWriter, requestId uuid.UUID) *envelopeResponseWriter {
 	return &envelopeResponseWriter{
 		response: responseEnvelope{
 			RequestId: requestId,

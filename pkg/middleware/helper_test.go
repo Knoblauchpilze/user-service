@@ -72,3 +72,11 @@ func unmarshalLogOutput(t *testing.T, out bytes.Buffer) message {
 
 	return actual
 }
+
+func assertIsHttpErrorWithMessageAndCode(t *testing.T, err error, message string, httpCode int) {
+	httpErr, ok := err.(*echo.HTTPError)
+	require.True(t, ok)
+
+	require.Equal(t, httpCode, httpErr.Code)
+	require.Equal(t, message, httpErr.Message)
+}

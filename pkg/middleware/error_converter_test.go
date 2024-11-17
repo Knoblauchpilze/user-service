@@ -15,9 +15,8 @@ func TestUnit_ErrorConverter_CallsNextMiddleware(t *testing.T) {
 
 	err := callable(ctx)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.True(*called)
+	assert.Nil(t, err)
+	assert.True(t, *called)
 }
 
 func TestUnit_ErrorConverter_WrapsUnknownErrorIntoHttpError(t *testing.T) {

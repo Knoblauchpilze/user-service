@@ -17,9 +17,8 @@ func TestUnit_Recover_CallsNextMiddleware(t *testing.T) {
 
 	err := callable(ctx)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.True(*called)
+	assert.Nil(t, err)
+	assert.True(t, *called)
 }
 
 func TestUnit_Recover_PreventsPanic(t *testing.T) {
@@ -32,9 +31,8 @@ func TestUnit_Recover_PreventsPanic(t *testing.T) {
 
 	err := callable(ctx)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.True(*called)
+	assert.Nil(t, err)
+	assert.True(t, *called)
 }
 
 func TestUnit_Recover_LogsError(t *testing.T) {
@@ -50,12 +48,11 @@ func TestUnit_Recover_LogsError(t *testing.T) {
 	afterCall := time.Now()
 
 	actual := unmarshalLogOutput(t, *out)
-	assert := assert.New(t)
-	assert.Equal("error", actual.Level)
+	assert.Equal(t, "error", actual.Level)
 	safetyMargin := 5 * time.Second
-	assert.True(areTimeCloserThan(actual.Time, afterCall, safetyMargin), "%v and %v are not within %v", afterCall, actual.Time, safetyMargin)
+	assert.True(t, areTimeCloserThan(actual.Time, afterCall, safetyMargin), "%v and %v are not within %v", afterCall, actual.Time, safetyMargin)
 	// https://golangforall.com/en/post/golang-regexp-matching-newline.html
-	assert.Regexp("GET example.com/ generated panic: some error. Stack: [[:graph:]\\s]*", actual.Message)
+	assert.Regexp(t, "GET example.com/ generated panic: some error. Stack: [[:graph:]\\s]*", actual.Message)
 }
 
 func TestUnit_Recover_SetsStatusCodeToError(t *testing.T) {
@@ -69,15 +66,14 @@ func TestUnit_Recover_SetsStatusCodeToError(t *testing.T) {
 	err := callable(ctx)
 	require.Nil(t, err)
 
-	assert := assert.New(t)
-	assert.Equal(http.StatusInternalServerError, rw.Code)
+	assert.Equal(t, http.StatusInternalServerError, rw.Code)
 	body, err := io.ReadAll(rw.Body)
 	require.Nil(t, err)
 	expected := `
 	{
 		"message":"some error"
 	}`
-	assert.JSONEq(expected, string(body))
+	assert.JSONEq(t, expected, string(body))
 }
 
 func createPanicHandler() (echo.HandlerFunc, *bool) {

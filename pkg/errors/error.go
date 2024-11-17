@@ -158,11 +158,9 @@ func (e errorImpl) marshalCause() json.RawMessage {
 
 func determineCommonErrorMessage(code ErrorCode) string {
 	switch code {
-	case GenericErrorCode:
-		return "An unexpected error occurred"
 	case NotImplementedCode:
 		return "Not implemented"
 	default:
-		return ""
+		return "An unexpected error occurred"
 	}
 }

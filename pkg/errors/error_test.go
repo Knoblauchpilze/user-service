@@ -31,14 +31,12 @@ func TestUnit_Error_NewCode(t *testing.T) {
 
 	impl, ok := err.(errorImpl)
 	assert.True(ok)
-	assert.Equal("", impl.Message)
+	assert.Equal("An unexpected error occurred", impl.Message)
 	assert.Nil(impl.Cause)
 	assert.Equal(someCode, impl.Value)
 }
 
 func TestUnit_Error_NewCode_WhenGenericCode_ExpectMessage(t *testing.T) {
-	assert := assert.New(t)
-
 	testCases := []struct {
 		code            ErrorCode
 		expectedMessage string
@@ -51,8 +49,8 @@ func TestUnit_Error_NewCode_WhenGenericCode_ExpectMessage(t *testing.T) {
 		t.Run(testCase.expectedMessage, func(t *testing.T) {
 			err := NewCode(testCase.code)
 			impl, ok := err.(errorImpl)
-			assert.True(ok)
-			assert.Equal(testCase.expectedMessage, impl.Message)
+			assert.True(t, ok)
+			assert.Equal(t, testCase.expectedMessage, impl.Message)
 		})
 	}
 }
@@ -110,7 +108,7 @@ func TestUnit_Error_WrapCode(t *testing.T) {
 
 	impl, ok := err.(errorImpl)
 	assert.True(ok)
-	assert.Equal("", impl.Message)
+	assert.Equal("An unexpected error occurred", impl.Message)
 	assert.Equal(errSomeError, impl.Cause)
 	assert.Equal(someCode, impl.Value)
 }
@@ -157,7 +155,7 @@ func TestUnit_Error_Error(t *testing.T) {
 
 	err = WrapCode(errSomeError, someCode)
 
-	expected = "(26)  (cause: some error)"
+	expected = "(26) An unexpected error occurred (cause: some error)"
 	assert.Equal(expected, err.Error())
 }
 
@@ -177,30 +175,51 @@ func TestUnit_Error_MarshalJSON(t *testing.T) {
 	err := New("haha")
 	out, mErr := json.Marshal(err)
 
-	expected := "{\"Code\":1,\"Message\":\"haha\"}"
+	expected := `
+	{
+		"Code": 1,
+		"Message": "haha"
+	}`
 	assert.Nil(mErr)
-	assert.Equal(expected, string(out))
+	assert.JSONEq(expected, string(out))
 
 	err = NewCode(someCode)
 	out, mErr = json.Marshal(err)
 
 	assert.Nil(mErr)
-	expected = "{\"Code\":26}"
-	assert.Equal(expected, string(out))
+	expected = `
+	{
+		"Code": 26,
+		"Message": "An unexpected error occurred"
+	}`
+	assert.JSONEq(expected, string(out))
 
 	err = Wrap(errSomeError, "hihi")
 	out, mErr = json.Marshal(err)
 
-	expected = "{\"Code\":1,\"Message\":\"hihi\",\"Cause\":\"some error\"}"
+	expected = `
+	{
+		"Code": 1,
+		"Message": "hihi",
+		"Cause": "some error"
+	}`
 	assert.Nil(mErr)
-	assert.Equal(expected, string(out))
+	assert.JSONEq(expected, string(out))
 
 	err = Wrap(New("haha"), "hihi")
 	out, mErr = json.Marshal(err)
 
-	expected = "{\"Code\":1,\"Message\":\"hihi\",\"Cause\":{\"Code\":1,\"Message\":\"haha\"}}"
+	expected = `
+	{
+		"Code": 1,
+		"Message": "hihi",
+		"Cause": {
+			"Code": 1,
+			"Message": "haha"
+		}
+	}`
 	assert.Nil(mErr)
-	assert.Equal(expected, string(out))
+	assert.JSONEq(expected, string(out))
 }
 
 func TestUnit_Error_IsErrorWithCode(t *testing.T) {

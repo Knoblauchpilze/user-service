@@ -39,7 +39,7 @@ func TestUnit_ErrorConverter_WrapsErrorWithCodeIntoHttpError(t *testing.T) {
 
 	err := callable(ctx)
 
-	assertIsHttpErrorWithMessageAndCode(t, err, "(400) An unexpected error occurred", http.StatusInternalServerError)
+	assertIsHttpErrorWithMessageAndCode(t, err, "An unexpected error occurred. Code: 400", http.StatusInternalServerError)
 }
 
 func createErrorHandler(err error) echo.HandlerFunc {

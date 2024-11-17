@@ -15,9 +15,8 @@ func TestUnit_RequestLogger_CallsNextMiddleware(t *testing.T) {
 
 	err := callable(ctx)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.True(*called)
+	assert.Nil(t, err)
+	assert.True(t, *called)
 }
 
 func TestUnit_RequestLogger_PrintsRequestTiming(t *testing.T) {
@@ -32,11 +31,10 @@ func TestUnit_RequestLogger_PrintsRequestTiming(t *testing.T) {
 	afterCall := time.Now()
 
 	actual := unmarshalLogOutput(t, out)
-	assert := assert.New(t)
-	assert.Equal("info", actual.Level)
+	assert.Equal(t, "info", actual.Level)
 	safetyMargin := 5 * time.Second
-	assert.True(areTimeCloserThan(actual.Time, afterCall, safetyMargin), "%v and %v are not within %v", afterCall, actual.Time, safetyMargin)
-	assert.Regexp(`GET example.com/ processed in [0-9]+(\.[0-9]+)?([mµn])?s -> \x1b\[1;32m200\x1b\[0m`, actual.Message)
+	assert.True(t, areTimeCloserThan(actual.Time, afterCall, safetyMargin), "%v and %v are not within %v", afterCall, actual.Time, safetyMargin)
+	assert.Regexp(t, `GET example.com/ processed in [0-9]+(\.[0-9]+)?([mµn])?s -> \x1b\[1;32m200\x1b\[0m`, actual.Message)
 }
 
 func areTimeCloserThan(t1 time.Time, t2 time.Time, distance time.Duration) bool {

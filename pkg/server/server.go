@@ -11,8 +11,10 @@ import (
 
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/KnoblauchPilze/user-service/pkg/logger"
+	om "github.com/KnoblauchPilze/user-service/pkg/middleware"
 	"github.com/KnoblauchPilze/user-service/pkg/rest"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Server interface {
@@ -99,5 +101,31 @@ func createEchoServer() *echo.Echo {
 	e.HidePort = true
 	e.Logger = logger.Wrap(logger.New(logger.NewPrettyWriter(os.Stdout)))
 
+	registerMiddlewares(e)
+
 	return e
+}
+
+func registerMiddlewares(e *echo.Echo) {
+	// https://stackoverflow.com/questions/74020538/cors-preflight-did-not-succeed
+	// https://stackoverflow.com/questions/6660019/restful-api-methods-head-options
+	corsConf := middleware.CORSConfig{
+		// https://www.stackhawk.com/blog/golang-cors-guide-what-it-is-and-how-to-enable-it/
+		// Same as the default value
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{
+			http.MethodOptions,
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPatch,
+			http.MethodDelete,
+		},
+	}
+
+	e.Use(middleware.CORSWithConfig(corsConf))
+	e.Use(middleware.Gzip())
+	e.Use(om.RequestLogger())
+	e.Use(om.ResponseEnvelope())
+	e.Use(om.ErrorConverter())
+	e.Use(om.Recover())
 }

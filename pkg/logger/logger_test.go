@@ -189,3 +189,22 @@ func TestUnit_Logger_WhenSettingNewOutput_ExpectItToBeUsed(t *testing.T) {
 	assert.JSONEq(expectedJson, out2.String())
 	assert.Equal(0, out1.Len())
 }
+
+func TestUnit_Logger_WhenCloning_WritesToSameOutput(t *testing.T) {
+	var out bytes.Buffer
+	log := New(&out)
+	log.SetPrefix("my-prefix")
+	log.SetHeader("my-header")
+	copy := Clone(log)
+
+	copy.Printf("hello %s", "John")
+
+	expectedJson := `
+	{
+		"level": "debug",
+		"message": "hello John"
+	}`
+	assert.JSONEq(t, expectedJson, out.String())
+	assert.Equal(t, "my-prefix", copy.Prefix())
+	assert.Equal(t, "my-header", copy.Header())
+}

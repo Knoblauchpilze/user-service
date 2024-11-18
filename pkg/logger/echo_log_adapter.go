@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
@@ -17,6 +18,19 @@ func Wrap(log Logger) echo.Logger {
 	return &echoLoggerAdapter{
 		log: log,
 	}
+}
+
+func Duplicate(log echo.Logger) (echo.Logger, error) {
+	adapter, ok := log.(*echoLoggerAdapter)
+	if !ok {
+		return log, errors.NewCode(UnsupportedLogger)
+	}
+
+	copy := &echoLoggerAdapter{
+		log: Clone(adapter.log),
+	}
+
+	return copy, nil
 }
 
 func (la *echoLoggerAdapter) Output() io.Writer {
@@ -52,7 +66,9 @@ func (la *echoLoggerAdapter) Print(i ...interface{}) {
 	la.Printf(fmt.Sprint(i...))
 }
 
-func (la *echoLoggerAdapter) Printf(format string, args ...interface{}) {}
+func (la *echoLoggerAdapter) Printf(format string, args ...interface{}) {
+	la.log.Printf(format, args...)
+}
 
 func (la *echoLoggerAdapter) Printj(j log.JSON) {
 	// https://github.com/labstack/gommon/blob/2888b9ce44ed86f3cb956f95becc724d255f0a33/log/log.go#L362

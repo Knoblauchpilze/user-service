@@ -38,12 +38,24 @@ type loggerImpl struct {
 }
 
 func New(out io.Writer) Logger {
-	out = newSafeConsoleWriter(out)
+	safeOutput := out
+	if _, ok := safeOutput.(*safeConsoleWriter); !ok {
+		safeOutput = newSafeConsoleWriter(out)
+	}
+
 	return &loggerImpl{
-		out:    out,
-		logger: zerolog.New(out),
+		out:    safeOutput,
+		logger: zerolog.New(safeOutput),
 		level:  DEBUG,
 	}
+}
+
+func Clone(logger Logger) Logger {
+	copy := New(logger.Output())
+	copy.SetLevel(logger.Level())
+	copy.SetPrefix(logger.Prefix())
+	copy.SetHeader(logger.Header())
+	return copy
 }
 
 func (l *loggerImpl) Level() Level {

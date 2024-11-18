@@ -126,6 +126,7 @@ func registerMiddlewares(e *echo.Echo) {
 	e.Use(middleware.Gzip())
 	e.Use(om.RequestLogger())
 	e.Use(om.ResponseEnvelope())
+	e.Use(om.RequestTracer(e.Logger))
 	e.Use(om.ErrorConverter())
 	e.Use(om.Recover())
 }

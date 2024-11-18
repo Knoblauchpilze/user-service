@@ -12,6 +12,7 @@ import (
 	"github.com/KnoblauchPilze/user-service/pkg/db"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/KnoblauchPilze/user-service/pkg/rest"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -144,6 +145,29 @@ func TestUnit_Server_WhenHandlerReturnsError_ExpectErrorResponseEnvelope(t *test
 	actual := unmarshalResponseAndAssertRequestId(t, resp)
 	assert.Equal(t, "ERROR", actual.Status)
 	assert.Equal(t, `{"message":"An unexpected error occurred. Code: 102"}`, string(actual.Details))
+}
+
+func TestUnit_Server_ExpectRequestIsProvidedALoggerWithARequestIdAsPrefix(t *testing.T) {
+	const port = 1238
+
+	var prefix string
+	route := func(c echo.Context) error {
+		prefix = c.Logger().Prefix()
+		return nil
+	}
+	s, ctx, cancel := createStoppableTestServerWithPortAndHandler(port, context.Background(), route)
+
+	var err error
+
+	handler := func() {
+		_, err = http.Get(fmt.Sprintf("http://localhost:%d", port))
+		cancel()
+	}
+
+	runServerAndExecuteHandler(t, ctx, s, handler)
+
+	assert.Nil(t, err)
+	assert.Nil(t, uuid.Validate(prefix), "Actual err: %v", err)
 }
 
 func createStoppableTestServer(ctx context.Context) (Server, context.Context, context.CancelFunc) {

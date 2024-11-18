@@ -44,7 +44,7 @@ jobs:
       - name: Run tests with coverage
         run: go test -run='^TestUnit_.*' ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
           file: ./coverage.out
@@ -126,7 +126,7 @@ jobs:
       - name: Run tests with coverage
         run: go test -run='^TestIT_.*' ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
           file: ./coverage.out

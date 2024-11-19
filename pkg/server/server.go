@@ -58,6 +58,8 @@ func (s *serverImpl) AddRoute(route rest.Route) error {
 		return errors.NewCode(UnsupportedMethod)
 	}
 
+	s.echo.Logger.Debugf("Registered %s %s", route.Method(), path)
+
 	return nil
 }
 
@@ -70,7 +72,10 @@ func (s *serverImpl) Start(ctx context.Context) error {
 
 	go func() {
 		address := fmt.Sprintf(":%d", s.port)
+
+		s.echo.Logger.Infof("Starting server at %s", address)
 		err := s.echo.Start(address)
+		s.echo.Logger.Infof("Server at %s gracefully shutdown", address)
 
 		if err != nil && err != http.ErrServerClosed {
 			runError = err

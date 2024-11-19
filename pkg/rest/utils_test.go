@@ -67,7 +67,7 @@ func TestUnit_ConcatenateEndpoints(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run("", func(t *testing.T) {
-			actual := concatenateEndpoints(testCase.basePath, testCase.path)
+			actual := ConcatenateEndpoints(testCase.basePath, testCase.path)
 
 			assert.Equal(testCase.expected, actual)
 		})

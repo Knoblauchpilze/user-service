@@ -24,6 +24,7 @@ type Server interface {
 
 type serverImpl struct {
 	echo            *echo.Echo
+	basePath        string
 	port            uint16
 	shutdownTimeout time.Duration
 	router          *echo.Group
@@ -34,6 +35,7 @@ func NewWithLogger(config Config, log logger.Logger) Server {
 
 	s := &serverImpl{
 		echo:            echoServer,
+		basePath:        config.BasePath,
 		port:            config.Port,
 		shutdownTimeout: config.ShutdownTimeout,
 		router:          echoServer.Group(""),
@@ -43,7 +45,7 @@ func NewWithLogger(config Config, log logger.Logger) Server {
 }
 
 func (s *serverImpl) AddRoute(route rest.Route) error {
-	path := route.Path()
+	path := rest.ConcatenateEndpoints(s.basePath, route.Path())
 
 	switch route.Method() {
 	case http.MethodGet:

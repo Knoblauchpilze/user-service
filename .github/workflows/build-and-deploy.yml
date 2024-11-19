@@ -20,7 +20,9 @@ jobs:
         run: |
           grep -rh 'func Test' --include *_test.go > all_tests.txt
           sed -i 's/func //g' all_tests.txt
-          grep -vE '^Test(Unit|IT)_' all_tests.txt > not_matching.txt || [[ $? == 1 ]]
+          cat all_tests.txt | cut -d'(' -f1 > test_names.txt
+          grep -v TestMain test_names.txt > test_without_main.txt
+          grep -vE '^Test(Unit|IT|)_' test_without_main.txt > not_matching.txt || [[ $? == 1 ]]
           FAILURES=$(wc -l < not_matching.txt)
           if [[ ${FAILURES} -ne 0 ]]; then
             echo 'failed=true' >> $GITHUB_OUTPUT

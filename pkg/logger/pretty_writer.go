@@ -8,6 +8,7 @@ import (
 )
 
 func NewPrettyWriter(out io.Writer) io.Writer {
+	// https://github.com/rs/zerolog?tab=readme-ov-file#pretty-logging
 	return zerolog.ConsoleWriter{
 		Out:          out,
 		TimeFormat:   time.DateTime,

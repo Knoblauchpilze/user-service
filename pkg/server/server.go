@@ -29,8 +29,8 @@ type serverImpl struct {
 	router          *echo.Group
 }
 
-func New(config Config) Server {
-	echoServer := createEchoServer()
+func NewWithLogger(config Config, log logger.Logger) Server {
+	echoServer := createEchoServer(logger.Wrap(log))
 
 	s := &serverImpl{
 		echo:            echoServer,
@@ -100,11 +100,11 @@ func (s *serverImpl) shutdown() error {
 	return s.echo.Shutdown(ctx)
 }
 
-func createEchoServer() *echo.Echo {
+func createEchoServer(log echo.Logger) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
-	e.Logger = logger.Wrap(logger.New(logger.NewPrettyWriter(os.Stdout)))
+	e.Logger = log
 
 	registerMiddlewares(e)
 

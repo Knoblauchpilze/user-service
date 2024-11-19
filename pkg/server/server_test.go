@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/KnoblauchPilze/user-service/pkg/db"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/KnoblauchPilze/user-service/pkg/logger"
 	"github.com/KnoblauchPilze/user-service/pkg/rest"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -190,7 +192,8 @@ func createStoppableTestServerWithPortAndHandler(port uint16, ctx context.Contex
 
 	cancellable, cancel := context.WithCancel(ctx)
 
-	s := New(config)
+	log := logger.New(&bytes.Buffer{})
+	s := NewWithLogger(config, log)
 	sampleRoute := rest.NewRoute(http.MethodGet, "/", handler)
 	s.AddRoute(sampleRoute)
 

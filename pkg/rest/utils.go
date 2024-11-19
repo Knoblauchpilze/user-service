@@ -20,7 +20,7 @@ func sanitizePath(route string) string {
 	return route
 }
 
-func concatenateEndpoints(basePath string, path string) string {
+func ConcatenateEndpoints(basePath string, path string) string {
 	concatenated := fmt.Sprintf("/%s/%s", basePath, path)
 	return sanitizePath(concatenated)
 }

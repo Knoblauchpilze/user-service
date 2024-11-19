@@ -80,6 +80,38 @@ func TestUnit_Server_ListensOnConfiguredPort(t *testing.T) {
 	assert.Equal(t, `"OK"`, string(actual.Details))
 }
 
+func TestUnit_Server_WhenConfigDefinesABasePath_ExpectPrefixedToRoutes(t *testing.T) {
+	const port = 1239
+	config := Config{
+		BasePath:        "prefix",
+		Port:            port,
+		ShutdownTimeout: 2 * time.Second,
+	}
+
+	cancellable, cancel := context.WithCancel(context.Background())
+
+	log := logger.New(&bytes.Buffer{})
+	s := NewWithLogger(config, log)
+	sampleRoute := rest.NewRoute(http.MethodGet, "/", createDummyHttpHandler())
+	s.AddRoute(sampleRoute)
+
+	var resp *http.Response
+	var err error
+
+	handler := func() {
+		resp, err = http.Get(fmt.Sprintf("http://localhost:%d/prefix", port))
+		cancel()
+	}
+
+	runServerAndExecuteHandler(t, cancellable, s, handler)
+
+	assert.Nil(t, err)
+	assertResponseStatusMatches(t, resp, http.StatusOK)
+	actual := unmarshalResponseAndAssertRequestId(t, resp)
+	assert.Equal(t, "SUCCESS", actual.Status)
+	assert.Equal(t, `"OK"`, string(actual.Details))
+}
+
 func TestUnit_Server_WrapsResponseInEnvelope(t *testing.T) {
 	const port = 1235
 	s, ctx, cancel := createStoppableTestServerWithPort(port, context.Background())
@@ -177,11 +209,7 @@ func createStoppableTestServer(ctx context.Context) (Server, context.Context, co
 }
 
 func createStoppableTestServerWithPort(port uint16, ctx context.Context) (Server, context.Context, context.CancelFunc) {
-	handler := func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "OK")
-	}
-
-	return createStoppableTestServerWithPortAndHandler(port, ctx, handler)
+	return createStoppableTestServerWithPortAndHandler(port, ctx, createDummyHttpHandler())
 }
 
 func createStoppableTestServerWithPortAndHandler(port uint16, ctx context.Context, handler echo.HandlerFunc) (Server, context.Context, context.CancelFunc) {
@@ -198,6 +226,12 @@ func createStoppableTestServerWithPortAndHandler(port uint16, ctx context.Contex
 	s.AddRoute(sampleRoute)
 
 	return s, cancellable, cancel
+}
+
+func createDummyHttpHandler() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return c.JSON(http.StatusOK, "OK")
+	}
 }
 
 func runWithTimeout(handler func() error) (error, bool) {

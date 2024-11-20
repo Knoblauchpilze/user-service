@@ -15,14 +15,12 @@ func TestUnit_AnalyzeAndWrapPgError_Nil(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestUnit_AnalyzeAndWrapPgError_WhenNotAPgError_ExpectWrappedInGenericError(t *testing.T) {
+func TestUnit_AnalyzeAndWrapPgError_WhenNotAKnownError_ExpectUnchanged(t *testing.T) {
 	err := fmt.Errorf("some error")
 
 	actual := AnalyzeAndWrapPgError(err)
 
-	assert.True(t, errors.IsErrorWithCode(actual, GenericSqlError), "Actual err: %v", err)
-	cause := errors.Unwrap(actual)
-	assert.Equal(t, err, cause)
+	assert.Equal(t, err, actual)
 }
 
 func TestUnit_AnalyzeAndWrapPgError_PgError(t *testing.T) {

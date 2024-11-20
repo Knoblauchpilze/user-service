@@ -27,7 +27,7 @@ func AnalyzeAndWrapPgError(err error) error {
 		return analyzeConnError(connErr)
 	}
 
-	return errors.WrapCode(err, GenericSqlError)
+	return err
 }
 
 func analyzePgError(err *pgconn.PgError) error {

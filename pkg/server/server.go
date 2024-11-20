@@ -70,6 +70,8 @@ func (s *serverImpl) Start(ctx context.Context) error {
 	notifyCtx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	waitCtx, cancel := context.WithCancel(notifyCtx)
+
 	var runError error
 
 	go func() {
@@ -81,13 +83,14 @@ func (s *serverImpl) Start(ctx context.Context) error {
 
 		if err != nil && err != http.ErrServerClosed {
 			runError = err
+			cancel()
 		}
 	}()
 
 	const reasonableWaitTimeToInitializeServer = 50 * time.Millisecond
 	time.Sleep(reasonableWaitTimeToInitializeServer)
 
-	<-notifyCtx.Done()
+	<-waitCtx.Done()
 
 	err := s.shutdown()
 	if err != nil {

@@ -204,6 +204,26 @@ func TestUnit_Server_ExpectRequestIsProvidedALoggerWithARequestIdAsPrefix(t *tes
 	assert.Nil(t, uuid.Validate(prefix), "Actual err: %v", err)
 }
 
+func TestUnit_Server_WhenPortAlreadyUsed_ExpectError(t *testing.T) {
+	const port = 1240
+	s1, ctx1, cancel1 := createStoppableTestServerWithPort(port, context.Background())
+
+	s2 := createServerWithPort(1240)
+	// cancel2, cancel := context.WithCancel(ctx)
+
+	var err error
+
+	handler := func() {
+		err = s2.Start(context.Background())
+		cancel1()
+	}
+
+	runServerAndExecuteHandler(t, ctx1, s1, handler)
+
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "bind: address already in use")
+}
+
 func createStoppableTestServer(ctx context.Context) (Server, context.Context, context.CancelFunc) {
 	return createStoppableTestServerWithPort(0, ctx)
 }
@@ -213,19 +233,23 @@ func createStoppableTestServerWithPort(port uint16, ctx context.Context) (Server
 }
 
 func createStoppableTestServerWithPortAndHandler(port uint16, ctx context.Context, handler echo.HandlerFunc) (Server, context.Context, context.CancelFunc) {
+	cancellable, cancel := context.WithCancel(ctx)
+
+	s := createServerWithPort(port)
+	sampleRoute := rest.NewRoute(http.MethodGet, "/", handler)
+	s.AddRoute(sampleRoute)
+
+	return s, cancellable, cancel
+}
+
+func createServerWithPort(port uint16) Server {
 	config := Config{
 		Port:            port,
 		ShutdownTimeout: 2 * time.Second,
 	}
 
-	cancellable, cancel := context.WithCancel(ctx)
-
 	log := logger.New(&bytes.Buffer{})
-	s := NewWithLogger(config, log)
-	sampleRoute := rest.NewRoute(http.MethodGet, "/", handler)
-	s.AddRoute(sampleRoute)
-
-	return s, cancellable, cancel
+	return NewWithLogger(config, log)
 }
 
 func createDummyHttpHandler() echo.HandlerFunc {

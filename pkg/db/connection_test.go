@@ -25,6 +25,16 @@ func TestUnit_New_InvalidConfiguration(t *testing.T) {
 	assert.NotNil(err)
 }
 
+func TestUnit_New_ValidConfiguration_InvalidCredentials(t *testing.T) {
+	config := dbTestConfig
+	config.Password = "not-the-right-password"
+
+	conn, err := New(context.Background(), config)
+
+	assert.NotNil(t, conn)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.AuthenticationFailed), "Actual err: %v", err)
+}
+
 func TestIT_New_ValidConfiguration(t *testing.T) {
 	conn, err := New(context.Background(), dbTestConfig)
 

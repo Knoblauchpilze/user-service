@@ -35,7 +35,9 @@ func New(ctx context.Context, config Config) (Connection, error) {
 		pool: pool,
 	}
 
-	return conn, err
+	err = conn.Ping(ctx)
+
+	return conn, pgx.AnalyzeAndWrapPgError(err)
 }
 
 func (ci *connectionImpl) Close(ctx context.Context) {

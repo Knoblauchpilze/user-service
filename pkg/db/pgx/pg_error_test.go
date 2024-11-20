@@ -12,20 +12,20 @@ import (
 func TestUnit_AnalyzeAndWrapPgError_Nil(t *testing.T) {
 	err := AnalyzeAndWrapPgError(nil)
 
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 }
 
-func TestUnit_AnalyzeAndWrapPgError_WhenNotAPgError_ExpectUnchanged(t *testing.T) {
+func TestUnit_AnalyzeAndWrapPgError_WhenNotAPgError_ExpectWrappedInGenericError(t *testing.T) {
 	err := fmt.Errorf("some error")
 
 	actual := AnalyzeAndWrapPgError(err)
 
-	assert := assert.New(t)
-	assert.Equal(err, actual)
+	assert.True(t, errors.IsErrorWithCode(actual, GenericSqlError), "Actual err: %v", err)
+	cause := errors.Unwrap(actual)
+	assert.Equal(t, err, cause)
 }
 
-func TestUnit_AnalyzeAndWrapPgError(t *testing.T) {
+func TestUnit_AnalyzeAndWrapPgError_PgError(t *testing.T) {
 	type testCase struct {
 		code          string
 		expectedError errors.ErrorCode
@@ -48,17 +48,15 @@ func TestUnit_AnalyzeAndWrapPgError(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run("", func(t *testing.T) {
-			assert := assert.New(t)
-
 			err := &jpgx.PgError{
 				Code: testCase.code,
 			}
 
 			actual := AnalyzeAndWrapPgError(err)
 
-			assert.True(errors.IsErrorWithCode(actual, testCase.expectedError), "Actual err: %v", err)
+			assert.True(t, errors.IsErrorWithCode(actual, testCase.expectedError), "Actual err: %v", err)
 			cause := errors.Unwrap(actual)
-			assert.Equal(err, cause)
+			assert.Equal(t, err, cause)
 		})
 	}
 }

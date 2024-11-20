@@ -21,7 +21,7 @@ func DefaultConfig() Configuration {
 	return Configuration{
 		Server: server.Config{
 			BasePath:        "/v1/users",
-			Port:            uint16(1234),
+			Port:            uint16(80),
 			ShutdownTimeout: 5 * time.Second,
 		},
 		Database: postgresql.NewConfigForDockerContainer(

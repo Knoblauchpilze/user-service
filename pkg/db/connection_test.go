@@ -20,9 +20,8 @@ func TestUnit_New_InvalidConfiguration(t *testing.T) {
 
 	conn, err := New(context.Background(), config)
 
-	assert := assert.New(t)
-	assert.Nil(conn)
-	assert.NotNil(err)
+	assert.Nil(t, conn)
+	assert.NotNil(t, err)
 }
 
 func TestIT_New_ValidConfiguration_InvalidCredentials(t *testing.T) {
@@ -38,17 +37,15 @@ func TestIT_New_ValidConfiguration_InvalidCredentials(t *testing.T) {
 func TestIT_New_ValidConfiguration(t *testing.T) {
 	conn, err := New(context.Background(), dbTestConfig)
 
-	assert := assert.New(t)
-	assert.NotNil(conn)
-	assert.Nil(err)
+	assert.NotNil(t, conn)
+	assert.Nil(t, err)
 }
 
 func TestIT_Connection_Ping(t *testing.T) {
 	conn := newTestConnection(t)
 
 	err := conn.Ping(context.Background())
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 }
 
 func TestIT_Connection_Close(t *testing.T) {
@@ -59,8 +56,7 @@ func TestIT_Connection_Close(t *testing.T) {
 
 	conn.Close(context.Background())
 	err = conn.Ping(context.Background())
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, NotConnected), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, NotConnected), "Actual err: %v", err)
 }
 
 func TestIT_Connection_BeginTx_TimeStampIsValid(t *testing.T) {
@@ -69,9 +65,8 @@ func TestIT_Connection_BeginTx_TimeStampIsValid(t *testing.T) {
 	beforeTx := time.Now()
 	tx, err := conn.BeginTx(context.Background())
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.True(beforeTx.Before(tx.TimeStamp()))
+	assert.Nil(t, err)
+	assert.True(t, beforeTx.Before(tx.TimeStamp()))
 }
 
 func TestIT_Connection_BeginTx_ClosedConnection(t *testing.T) {
@@ -80,19 +75,18 @@ func TestIT_Connection_BeginTx_ClosedConnection(t *testing.T) {
 
 	tx, err := conn.BeginTx(context.Background())
 
-	assert := assert.New(t)
-	assert.Nil(tx)
-	assert.True(errors.IsErrorWithCode(err, NotConnected), "Actual err: %v", err)
+	assert.Nil(t, tx)
+	assert.True(t, errors.IsErrorWithCode(err, NotConnected), "Actual err: %v", err)
 }
 
 func TestIT_Connection_Exec_Select(t *testing.T) {
 	conn := newTestConnection(t)
+	element := insertTestData(t, conn)
 
-	affectedRows, err := conn.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE name = 'test-name'")
+	affectedRows, err := conn.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE id = $1", element.Id)
 
-	assert := assert.New(t)
-	assert.Equal(int64(1), affectedRows)
-	assert.Nil(err)
+	assert.Equal(t, int64(1), affectedRows)
+	assert.Nil(t, err)
 }
 
 func TestIT_Connection_Exec_Insert(t *testing.T) {
@@ -103,77 +97,75 @@ func TestIT_Connection_Exec_Insert(t *testing.T) {
 	name := uuid.New()
 	affectedRows, err := conn.Exec(context.Background(), "INSERT INTO my_table VALUES ($1, $2)", id, name)
 
-	assert := assert.New(t)
-	assert.Equal(int64(1), affectedRows)
-	assert.Nil(err)
+	assert.Equal(t, int64(1), affectedRows)
+	assert.Nil(t, err)
+
+	assertIdExists(t, conn, id)
 }
 
 func TestIT_Connection_Exec_InsertDuplicate(t *testing.T) {
 	conn := newTestConnection(t)
-
-	_, name := insertTestData(t, conn)
+	element := insertTestData(t, conn)
 	id := uuid.New()
 
-	affectedRows, err := conn.Exec(context.Background(), "INSERT INTO my_table VALUES ($1, $2)", id, name)
+	affectedRows, err := conn.Exec(context.Background(), "INSERT INTO my_table VALUES ($1, $2)", id, element.Name)
 
-	assert := assert.New(t)
-	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
+	assert.Equal(t, int64(0), affectedRows)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
+	assertIdDoesNotExist(t, conn, id)
 }
 
 func TestIT_Connection_Exec_Update(t *testing.T) {
 	conn := newTestConnection(t)
-	id, _ := insertTestData(t, conn)
+	element := insertTestData(t, conn)
 	newName := uuid.New().String()
 
-	affectedRows, err := conn.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", newName, id)
-	assert := assert.New(t)
-	assert.Equal(int64(1), affectedRows)
-	assert.Nil(err)
+	affectedRows, err := conn.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", newName, element.Id)
+	assert.Equal(t, int64(1), affectedRows)
+	assert.Nil(t, err)
 
-	assertNameForId(t, conn, id, newName)
+	assertNameForId(t, conn, element.Id, newName)
 }
 
 func TestIT_Connection_Exec_UpdateDuplicate(t *testing.T) {
 	conn := newTestConnection(t)
-	id, name := insertTestData(t, conn)
+	element := insertTestData(t, conn)
+	anotherElement := insertTestData(t, conn)
 
-	affectedRows, err := conn.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", "test-name", id)
-	assert := assert.New(t)
-	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
+	affectedRows, err := conn.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", anotherElement.Name, element.Id)
+	assert.Equal(t, int64(0), affectedRows)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 
-	assertNameForId(t, conn, id, name.String())
+	assertNameForId(t, conn, element.Id, element.Name)
 }
 
 func TestIT_Connection_Exec_Delete(t *testing.T) {
 	conn := newTestConnection(t)
-	id, _ := insertTestData(t, conn)
+	element := insertTestData(t, conn)
 
-	affectedRows, err := conn.Exec(context.Background(), "DELETE FROM my_table WHERE id = $1", id)
-	assert := assert.New(t)
-	assert.Equal(int64(1), affectedRows)
-	assert.Nil(err)
+	affectedRows, err := conn.Exec(context.Background(), "DELETE FROM my_table WHERE id = $1", element.Id)
+	assert.Equal(t, int64(1), affectedRows)
+	assert.Nil(t, err)
 
-	assertIdDoesNotExist(t, conn, id)
+	assertIdDoesNotExist(t, conn, element.Id)
 }
 
 func TestIT_Connection_Exec_WithArguments(t *testing.T) {
 	conn := newTestConnection(t)
+	element := insertTestData(t, conn)
 
-	affectedRows, err := conn.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE name = $1", "test-name")
+	affectedRows, err := conn.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE name = $1", element.Name)
 
-	assert := assert.New(t)
-	assert.Equal(int64(1), affectedRows)
-	assert.Nil(err)
+	assert.Equal(t, int64(1), affectedRows)
+	assert.Nil(t, err)
 }
 
 func TestIT_Connection_Exec_WrongSyntax(t *testing.T) {
 	conn := newTestConnection(t)
+	element := insertTestData(t, conn)
 
-	affectedRows, err := conn.Exec(context.Background(), "DESELECT COUNT(*) FROM my_table WHERE name = 'test-name'")
+	affectedRows, err := conn.Exec(context.Background(), "DESELECT COUNT(*) FROM my_table WHERE name = $1", element.Name)
 
-	assert := assert.New(t)
-	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
+	assert.Equal(t, int64(0), affectedRows)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 }

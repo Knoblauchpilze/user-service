@@ -17,9 +17,8 @@ type dummyTransaction struct {
 func TestUnit_QueryOneTx_UnsupportedConnection(t *testing.T) {
 	_, err := QueryOneTx[int](context.Background(), &dummyTransaction{}, sampleSqlQuery)
 
-	assert := assert.New(t)
-	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation), "Actual err: %v", err)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsErrorWithCode(err, UnsupportedOperation), "Actual err: %v", err)
 }
 
 func TestIT_QueryOneTx_WhenCommitted_ExpectFailure(t *testing.T) {
@@ -28,9 +27,8 @@ func TestIT_QueryOneTx_WhenCommitted_ExpectFailure(t *testing.T) {
 
 	_, err := QueryOneTx[int](context.Background(), tx, sampleSqlQuery)
 
-	assert := assert.New(t)
-	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
 }
 
 func TestIT_QueryOneTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -39,93 +37,73 @@ func TestIT_QueryOneTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
 	sqlQuery := "SELECT name FROM my_tables"
 	_, err := QueryOneTx[string](context.Background(), tx, sqlQuery)
 
-	assert := assert.New(t)
-	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 
 	cause := errors.Unwrap(err)
-	assert.NotNil(cause)
+	assert.NotNil(t, cause)
 }
 
 func TestIT_QueryOneTx_WhenNoData_ExpectFailure(t *testing.T) {
 	_, tx := newTestTransaction(t)
 
-	type element struct {
-		Name string
-	}
-
-	sqlQuery := "SELECT name FROM my_table WHERE name = $1"
+	sqlQuery := "SELECT id, name FROM my_table WHERE name = $1"
 	_, err := QueryOneTx[element](context.Background(), tx, sqlQuery, "does-not-exist")
 
-	assert := assert.New(t)
-	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, NoMatchingRows), "Actual err: %v", err)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsErrorWithCode(err, NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_QueryOneTx_WhenTooManyRows_ExpectFailure(t *testing.T) {
 	_, tx := newTestTransaction(t)
+	v1 := insertTestDataTx(t, tx)
+	v2 := insertTestDataTx(t, tx)
 
-	type element struct {
-		Name string
-	}
+	sqlQuery := "SELECT id, name FROM my_table WHERE id IN ($1, $2)"
+	_, err := QueryOneTx[element](context.Background(), tx, sqlQuery, v1.Id, v2.Id)
 
-	sqlQuery := "SELECT name FROM my_table"
-	_, err := QueryOneTx[element](context.Background(), tx, sqlQuery)
-
-	assert := assert.New(t)
-	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, TooManyMatchingRows), "Actual err: %v", err)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsErrorWithCode(err, TooManyMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_QueryOneTx_ToStruct(t *testing.T) {
 	_, tx := newTestTransaction(t)
+	expected := insertTestDataTx(t, tx)
 
-	type element struct {
-		Id   string
-		Name string
-	}
+	sqlQuery := "SELECT id, name FROM my_table WHERE name = $1"
+	actual, err := QueryOneTx[element](context.Background(), tx, sqlQuery, expected.Name)
 
-	sqlQuery := "SELECT id, name FROM my_table WHERE name = 'test-name'"
-	actual, err := QueryOneTx[element](context.Background(), tx, sqlQuery)
-
-	assert := assert.New(t)
-	assert.Nil(err)
-	expected := element{
-		Id:   "0463ed3d-bfc9-4c10-b6ee-c223bbca0fab",
-		Name: "test-name",
-	}
-	assert.Equal(expected, actual)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, actual)
 }
 
 func TestIT_QueryOneTx_ToString(t *testing.T) {
 	_, tx := newTestTransaction(t)
+	expected := insertTestDataTx(t, tx)
 
-	sqlQuery := "SELECT id FROM my_table WHERE name = 'test-name'"
-	actual, err := QueryOneTx[string](context.Background(), tx, sqlQuery)
+	sqlQuery := "SELECT name FROM my_table WHERE id = $1"
+	actual, err := QueryOneTx[string](context.Background(), tx, sqlQuery, expected.Id)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Equal("0463ed3d-bfc9-4c10-b6ee-c223bbca0fab", actual)
+	assert.Nil(t, err)
+	assert.Equal(t, expected.Name, actual)
 }
 
 func TestIT_QueryOneTx_ToUuid(t *testing.T) {
 	_, tx := newTestTransaction(t)
+	expected := insertTestDataTx(t, tx)
 
-	sqlQuery := "SELECT id FROM my_table WHERE name = 'test-name'"
-	actual, err := QueryOneTx[uuid.UUID](context.Background(), tx, sqlQuery)
+	sqlQuery := "SELECT id FROM my_table WHERE name = $1"
+	actual, err := QueryOneTx[uuid.UUID](context.Background(), tx, sqlQuery, expected.Name)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	expected := uuid.MustParse("0463ed3d-bfc9-4c10-b6ee-c223bbca0fab")
-	assert.Equal(expected, actual)
+	assert.Nil(t, err)
+	assert.Equal(t, expected.Id, actual)
 }
 
 func TestIT_QueryAllTx_UnsupportedConnection(t *testing.T) {
 	_, err := QueryAllTx[int](context.Background(), &dummyTransaction{}, sampleSqlQuery)
 
-	assert := assert.New(t)
-	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, UnsupportedOperation), "Actual err: %v", err)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsErrorWithCode(err, UnsupportedOperation), "Actual err: %v", err)
 }
 
 func TestIT_QueryAllTx_WhenCommitted_ExpectFailure(t *testing.T) {
@@ -134,9 +112,8 @@ func TestIT_QueryAllTx_WhenCommitted_ExpectFailure(t *testing.T) {
 
 	_, err := QueryAllTx[int](context.Background(), tx, sampleSqlQuery)
 
-	assert := assert.New(t)
-	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
 }
 
 func TestIT_QueryAllTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
@@ -145,109 +122,58 @@ func TestIT_QueryAllTx_WhenConnectionFails_ExpectFailure(t *testing.T) {
 	sqlQuery := "SELECT name FROM my_tables"
 	_, err := QueryAllTx[string](context.Background(), tx, sqlQuery)
 
-	assert := assert.New(t)
-	assert.NotNil(err)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
+	assert.NotNil(t, err)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 
 	cause := errors.Unwrap(err)
-	assert.NotNil(cause)
+	assert.NotNil(t, cause)
 }
 
 func TestIT_QueryAllTx_NoData(t *testing.T) {
 	_, tx := newTestTransaction(t)
 
-	type element struct {
-		Name string
-	}
-
-	sqlQuery := "SELECT name FROM my_table WHERE name = $1"
+	sqlQuery := "SELECT id, name FROM my_table WHERE name = $1"
 	out, err := QueryAllTx[element](context.Background(), tx, sqlQuery, "does-not-exist")
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Empty(out)
+	assert.Nil(t, err)
+	assert.Empty(t, out)
 }
 
 func TestIT_QueryAllTx_ToStruct(t *testing.T) {
 	_, tx := newTestTransaction(t)
+	v1 := insertTestDataTx(t, tx)
+	v2 := insertTestDataTx(t, tx)
 
-	type element struct {
-		Id   string
-		Name string
-	}
+	sqlQuery := `SELECT id, name FROM my_table WHERE id IN ($1, $2)`
+	actual, err := QueryAllTx[element](context.Background(), tx, sqlQuery, v1.Id, v2.Id)
 
-	sqlQuery := `
-		SELECT
-			id,
-			name
-		FROM
-			my_table
-		WHERE
-			id IN (
-			'0463ed3d-bfc9-4c10-b6ee-c223bbca0fab',
-			'09dd5fc3-0732-4017-81e0-ffee3211d2b9'
-		)`
-	actual, err := QueryAllTx[element](context.Background(), tx, sqlQuery)
-
-	assert := assert.New(t)
-	assert.Nil(err)
-	expected := []element{
-		{
-			Id:   "0463ed3d-bfc9-4c10-b6ee-c223bbca0fab",
-			Name: "test-name",
-		},
-		{
-			Id:   "09dd5fc3-0732-4017-81e0-ffee3211d2b9",
-			Name: "other-name",
-		},
-	}
-	assert.Equal(expected, actual)
+	assert.Nil(t, err)
+	expected := []element{v1, v2}
+	assert.Equal(t, expected, actual)
 }
 
 func TestIT_QueryAllTx_ToString(t *testing.T) {
 	_, tx := newTestTransaction(t)
+	v1 := insertTestDataTx(t, tx)
+	v2 := insertTestDataTx(t, tx)
 
-	sqlQuery := `
-		SELECT
-			id
-		FROM
-			my_table
-		WHERE
-			id IN (
-			'0463ed3d-bfc9-4c10-b6ee-c223bbca0fab',
-			'09dd5fc3-0732-4017-81e0-ffee3211d2b9'
-		)`
-	actual, err := QueryAllTx[string](context.Background(), tx, sqlQuery)
+	sqlQuery := `SELECT name FROM my_table WHERE id IN ($1, $2)`
+	actual, err := QueryAllTx[string](context.Background(), tx, sqlQuery, v1.Id, v2.Id)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	expected := []string{
-		"0463ed3d-bfc9-4c10-b6ee-c223bbca0fab",
-		"09dd5fc3-0732-4017-81e0-ffee3211d2b9",
-	}
-	assert.Equal(expected, actual)
+	assert.Nil(t, err)
+	expected := []string{v1.Name, v2.Name}
+	assert.Equal(t, expected, actual)
 }
 
 func TestIT_QueryAllTx_ToUuid(t *testing.T) {
 	_, tx := newTestTransaction(t)
+	v1 := insertTestDataTx(t, tx)
+	v2 := insertTestDataTx(t, tx)
 
-	sqlQuery := `
-		SELECT
-			id
-		FROM
-			my_table
-		WHERE
-			id IN (
-			'0463ed3d-bfc9-4c10-b6ee-c223bbca0fab',
-			'09dd5fc3-0732-4017-81e0-ffee3211d2b9'
-		)`
-	actual, err := QueryAllTx[uuid.UUID](context.Background(), tx, sqlQuery)
+	sqlQuery := `SELECT id FROM my_table WHERE name IN ($1, $2)`
+	actual, err := QueryAllTx[uuid.UUID](context.Background(), tx, sqlQuery, v1.Name, v2.Name)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	expected := []uuid.UUID{
-		uuid.MustParse("0463ed3d-bfc9-4c10-b6ee-c223bbca0fab"),
-		uuid.MustParse("09dd5fc3-0732-4017-81e0-ffee3211d2b9"),
-	}
-	assert.Equal(expected, actual)
+	assert.Nil(t, err)
+	expected := []uuid.UUID{v1.Id, v2.Id}
+	assert.Equal(t, expected, actual)
 }

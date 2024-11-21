@@ -1,7 +1,6 @@
 package pgx
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
@@ -19,8 +18,6 @@ func AnalyzeAndWrapPgError(err error) error {
 	if err == nil {
 		return nil
 	}
-
-	fmt.Printf("analyze and wrap pg err: %v\n", err)
 
 	if pgErr, ok := err.(*pgconn.PgError); ok {
 		return analyzePgError(pgErr)

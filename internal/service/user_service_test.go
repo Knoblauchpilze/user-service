@@ -25,11 +25,10 @@ func TestIT_UserService_Create(t *testing.T) {
 	service, conn := newTestUserRepository(t)
 	out, err := service.Create(context.Background(), userDtoRequest)
 
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 
-	assert.Equal(userDtoRequest.Email, out.Email)
-	assert.Equal(userDtoRequest.Password, out.Password)
+	assert.Equal(t, userDtoRequest.Email, out.Email)
+	assert.Equal(t, userDtoRequest.Password, out.Password)
 	assertUserExists(t, conn, out.Id)
 }
 
@@ -42,8 +41,7 @@ func TestIT_UserService_Create_InvalidEmail(t *testing.T) {
 	service, _ := newTestUserRepository(t)
 	_, err := service.Create(context.Background(), userDtoRequest)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, InvalidEmail), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, InvalidEmail), "Actual err: %v", err)
 }
 
 func TestIT_UserService_Create_InvalidPassword(t *testing.T) {
@@ -55,8 +53,7 @@ func TestIT_UserService_Create_InvalidPassword(t *testing.T) {
 	service, _ := newTestUserRepository(t)
 	_, err := service.Create(context.Background(), userDtoRequest)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, InvalidPassword), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, InvalidPassword), "Actual err: %v", err)
 }
 
 func TestIT_UserService_Create_WhenUserAlreadyExists_ExpectFailure(t *testing.T) {
@@ -69,8 +66,7 @@ func TestIT_UserService_Create_WhenUserAlreadyExists_ExpectFailure(t *testing.T)
 
 	_, err := service.Create(context.Background(), userDtoRequest)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 }
 
 func TestIT_UserService_Get(t *testing.T) {
@@ -79,11 +75,10 @@ func TestIT_UserService_Get(t *testing.T) {
 
 	actual, err := service.Get(context.Background(), user.Id)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Equal(user.Id, actual.Id)
-	assert.Equal(user.Email, actual.Email)
-	assert.Equal(user.Password, actual.Password)
+	assert.Nil(t, err)
+	assert.Equal(t, user.Id, actual.Id)
+	assert.Equal(t, user.Email, actual.Email)
+	assert.Equal(t, user.Password, actual.Password)
 }
 
 func TestIT_UserService_Get_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
@@ -92,8 +87,7 @@ func TestIT_UserService_Get_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
 	service, _ := newTestUserRepository(t)
 	_, err := service.Get(context.Background(), nonExistingId)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_UserService_List(t *testing.T) {
@@ -102,9 +96,8 @@ func TestIT_UserService_List(t *testing.T) {
 
 	ids, err := service.List(context.Background())
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Contains(ids, user.Id)
+	assert.Nil(t, err)
+	assert.Contains(t, ids, user.Id)
 }
 
 func TestIT_UserService_Update(t *testing.T) {
@@ -119,15 +112,14 @@ func TestIT_UserService_Update(t *testing.T) {
 
 	updated, err := service.Update(context.Background(), user.Id, updatedUser)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Equal(updatedUser.Email, updated.Email)
-	assert.Equal(updatedUser.Password, updated.Password)
+	assert.Nil(t, err)
+	assert.Equal(t, updatedUser.Email, updated.Email)
+	assert.Equal(t, updatedUser.Password, updated.Password)
 
 	actual, err := service.Get(context.Background(), user.Id)
-	assert.Nil(err)
-	assert.Equal(updatedUser.Email, actual.Email)
-	assert.Equal(updatedUser.Password, actual.Password)
+	assert.Nil(t, err)
+	assert.Equal(t, updatedUser.Email, actual.Email)
+	assert.Equal(t, updatedUser.Password, actual.Password)
 }
 
 func TestIT_UserService_Update_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
@@ -140,8 +132,7 @@ func TestIT_UserService_Update_WhenUserDoesNotExist_ExpectFailure(t *testing.T) 
 	service, _ := newTestUserRepository(t)
 	_, err := service.Update(context.Background(), nonExistentId, updatedUser)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_UserService_Update_WhenUpdateFails_ExpectFailure(t *testing.T) {
@@ -156,8 +147,7 @@ func TestIT_UserService_Update_WhenUpdateFails_ExpectFailure(t *testing.T) {
 
 	_, err := service.Update(context.Background(), user.Id, updatedUser)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
 }
 
 func TestIT_UserService_Delete(t *testing.T) {
@@ -166,8 +156,7 @@ func TestIT_UserService_Delete(t *testing.T) {
 
 	err := service.Delete(context.Background(), user.Id)
 
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 	assertUserDoesNotExist(t, conn, user.Id)
 }
 
@@ -177,8 +166,7 @@ func TestIT_UserService_Delete_WhenUserDoesNotExist_ExpectSuccess(t *testing.T) 
 	service, _ := newTestUserRepository(t)
 	err := service.Delete(context.Background(), nonExistingId)
 
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 }
 
 func TestIT_UserService_Delete_WhenUserIsLoggedIn_ExpectApiKeyAlsoDeleted(t *testing.T) {
@@ -188,8 +176,7 @@ func TestIT_UserService_Delete_WhenUserIsLoggedIn_ExpectApiKeyAlsoDeleted(t *tes
 
 	err := service.Delete(context.Background(), user.Id)
 
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 	assertApiKeyDoesNotExist(t, conn, apiKey.Id)
 	assertUserDoesNotExist(t, conn, user.Id)
 }
@@ -205,11 +192,10 @@ func TestIT_UserService_Login_ExpectCorrectUserAndValidity(t *testing.T) {
 
 	apiKey, err := service.Login(context.Background(), userDtoRequest)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Equal(user.Id, apiKey.User)
+	assert.Nil(t, err)
+	assert.Equal(t, user.Id, apiKey.User)
 	validityDateWithSafetyMargin := time.Now().Add(55 * time.Minute)
-	assert.True(apiKey.ValidUntil.After(validityDateWithSafetyMargin))
+	assert.True(t, apiKey.ValidUntil.After(validityDateWithSafetyMargin))
 	assertApiKeyExistsByKey(t, conn, apiKey.Key)
 }
 
@@ -222,8 +208,7 @@ func TestIT_UserService_Login_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
 	service, _ := newTestUserRepository(t)
 	_, err := service.Login(context.Background(), userDtoRequest)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_UserService_Login_WhenCredentialsAreWrong_ExpectFailure(t *testing.T) {
@@ -237,8 +222,7 @@ func TestIT_UserService_Login_WhenCredentialsAreWrong_ExpectFailure(t *testing.T
 
 	_, err := service.Login(context.Background(), userDtoRequest)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, InvalidCredentials), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, InvalidCredentials), "Actual err: %v", err)
 }
 
 func TestIT_UserService_Login_WhenUserAlreadyLoggedIn_ExpectApiKeyValidityIsExtended(t *testing.T) {
@@ -254,13 +238,12 @@ func TestIT_UserService_Login_WhenUserAlreadyLoggedIn_ExpectApiKeyValidityIsExte
 
 	updatedApiKey, err := service.Login(context.Background(), userDtoRequest)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Equal(apiKey.Key, updatedApiKey.Key)
-	assert.Equal(user.Id, updatedApiKey.User)
-	assert.True(timeInThePast.Before(updatedApiKey.ValidUntil))
+	assert.Nil(t, err)
+	assert.Equal(t, apiKey.Key, updatedApiKey.Key)
+	assert.Equal(t, user.Id, updatedApiKey.User)
+	assert.True(t, timeInThePast.Before(updatedApiKey.ValidUntil))
 	validityDateWithSafetyMargin := time.Now().Add(55 * time.Minute)
-	assert.True(updatedApiKey.ValidUntil.After(validityDateWithSafetyMargin))
+	assert.True(t, updatedApiKey.ValidUntil.After(validityDateWithSafetyMargin))
 }
 
 func TestIT_UserService_Logout(t *testing.T) {
@@ -270,8 +253,7 @@ func TestIT_UserService_Logout(t *testing.T) {
 
 	err := service.Logout(context.Background(), user.Id)
 
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 	assertApiKeyDoesNotExist(t, conn, apiKey.Id)
 	assertUserExists(t, conn, user.Id)
 }
@@ -282,8 +264,7 @@ func TestIT_UserService_Logout_WhenUserDoesNotExist_ExpectFailure(t *testing.T) 
 	service, _ := newTestUserRepository(t)
 	err := service.Logout(context.Background(), nonExistingId)
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_UserService_Logout_WhenNotLoggedIn_ExpectSuccess(t *testing.T) {
@@ -292,8 +273,7 @@ func TestIT_UserService_Logout_WhenNotLoggedIn_ExpectSuccess(t *testing.T) {
 
 	err := service.Logout(context.Background(), user.Id)
 
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 	assertUserExists(t, conn, user.Id)
 }
 

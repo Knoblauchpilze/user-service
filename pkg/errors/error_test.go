@@ -13,27 +13,23 @@ var errSomeError = fmt.Errorf("some error")
 const someCode = ErrorCode(26)
 
 func TestUnit_Error_New(t *testing.T) {
-	assert := assert.New(t)
-
 	err := New("haha")
 
 	impl, ok := err.(errorImpl)
-	assert.True(ok)
-	assert.Equal("haha", impl.Message)
-	assert.Nil(impl.Cause)
-	assert.Equal(GenericErrorCode, impl.Value)
+	assert.True(t, ok)
+	assert.Equal(t, "haha", impl.Message)
+	assert.Nil(t, impl.Cause)
+	assert.Equal(t, GenericErrorCode, impl.Value)
 }
 
 func TestUnit_Error_NewCode(t *testing.T) {
-	assert := assert.New(t)
-
 	err := NewCode(someCode)
 
 	impl, ok := err.(errorImpl)
-	assert.True(ok)
-	assert.Equal("An unexpected error occurred", impl.Message)
-	assert.Nil(impl.Cause)
-	assert.Equal(someCode, impl.Value)
+	assert.True(t, ok)
+	assert.Equal(t, "An unexpected error occurred", impl.Message)
+	assert.Nil(t, impl.Cause)
+	assert.Equal(t, someCode, impl.Value)
 }
 
 func TestUnit_Error_NewCode_WhenGenericCode_ExpectMessage(t *testing.T) {
@@ -56,122 +52,102 @@ func TestUnit_Error_NewCode_WhenGenericCode_ExpectMessage(t *testing.T) {
 }
 
 func TestUnit_Error_NewNotImplemented(t *testing.T) {
-	assert := assert.New(t)
-
 	err := NotImplemented()
 
 	impl, ok := err.(errorImpl)
-	assert.True(ok)
-	assert.Equal("Not implemented", impl.Message)
-	assert.Nil(impl.Cause)
-	assert.Equal(NotImplementedCode, impl.Value)
+	assert.True(t, ok)
+	assert.Equal(t, "Not implemented", impl.Message)
+	assert.Nil(t, impl.Cause)
+	assert.Equal(t, NotImplementedCode, impl.Value)
 }
 
 func TestUnit_Error_NewCodeWithDetails(t *testing.T) {
-	assert := assert.New(t)
-
 	err := NewCodeWithDetails(someCode, "message")
 
 	impl, ok := err.(errorImpl)
-	assert.True(ok)
-	assert.Equal("message", impl.Message)
-	assert.Nil(impl.Cause)
-	assert.Equal(someCode, impl.Value)
+	assert.True(t, ok)
+	assert.Equal(t, "message", impl.Message)
+	assert.Nil(t, impl.Cause)
+	assert.Equal(t, someCode, impl.Value)
 }
 
 func TestUnit_Error_Newf(t *testing.T) {
-	assert := assert.New(t)
-
 	err := Newf("haha %d", 22)
 
 	impl, ok := err.(errorImpl)
-	assert.True(ok)
-	assert.Equal("haha 22", impl.Message)
-	assert.Nil(impl.Cause)
+	assert.True(t, ok)
+	assert.Equal(t, "haha 22", impl.Message)
+	assert.Nil(t, impl.Cause)
 }
 
 func TestUnit_Error_Wrap(t *testing.T) {
-	assert := assert.New(t)
-
 	err := Wrap(errSomeError, "context")
 
 	impl, ok := err.(errorImpl)
-	assert.True(ok)
-	assert.Equal("context", impl.Message)
-	assert.Equal(errSomeError, impl.Cause)
+	assert.True(t, ok)
+	assert.Equal(t, "context", impl.Message)
+	assert.Equal(t, errSomeError, impl.Cause)
 }
 
 func TestUnit_Error_WrapCode(t *testing.T) {
-	assert := assert.New(t)
-
 	err := WrapCode(errSomeError, someCode)
 
 	impl, ok := err.(errorImpl)
-	assert.True(ok)
-	assert.Equal("An unexpected error occurred", impl.Message)
-	assert.Equal(errSomeError, impl.Cause)
-	assert.Equal(someCode, impl.Value)
+	assert.True(t, ok)
+	assert.Equal(t, "An unexpected error occurred", impl.Message)
+	assert.Equal(t, errSomeError, impl.Cause)
+	assert.Equal(t, someCode, impl.Value)
 }
 
 func TestUnit_Error_Wrapf(t *testing.T) {
-	assert := assert.New(t)
-
 	err := Wrapf(errSomeError, "context %d", -44)
 
 	impl, ok := err.(errorImpl)
-	assert.True(ok)
-	assert.Equal("context -44", impl.Message)
-	assert.Equal(errSomeError, impl.Cause)
+	assert.True(t, ok)
+	assert.Equal(t, "context -44", impl.Message)
+	assert.Equal(t, errSomeError, impl.Cause)
 }
 
 func TestUnit_Error_Unwrap(t *testing.T) {
-	assert := assert.New(t)
-
 	err := Unwrap(nil)
-	assert.Nil(err)
+	assert.Nil(t, err)
 
 	err = Unwrap(errSomeError)
-	assert.Nil(err)
+	assert.Nil(t, err)
 
 	err = New("haha")
 	cause := Unwrap(err)
-	assert.Nil(cause)
+	assert.Nil(t, cause)
 
 	err = Wrap(errSomeError, "haha")
 	cause = Unwrap(err)
-	assert.Equal(errSomeError, cause)
+	assert.Equal(t, errSomeError, cause)
 
 	causeOfCause := Unwrap(cause)
-	assert.Nil(causeOfCause)
+	assert.Nil(t, causeOfCause)
 }
 
 func TestUnit_Error_Error(t *testing.T) {
-	assert := assert.New(t)
-
 	err := Wrapf(errSomeError, "context %d", -44)
 
 	expected := "context -44. Code: 1 (cause: some error)"
-	assert.Equal(expected, err.Error())
+	assert.Equal(t, expected, err.Error())
 
 	err = WrapCode(errSomeError, someCode)
 
 	expected = "An unexpected error occurred. Code: 26 (cause: some error)"
-	assert.Equal(expected, err.Error())
+	assert.Equal(t, expected, err.Error())
 }
 
 func TestUnit_Error_Code(t *testing.T) {
-	assert := assert.New(t)
-
 	err := NewCode(someCode)
 
 	impl, ok := err.(ErrorWithCode)
-	assert.True(ok)
-	assert.Equal(someCode, impl.Code())
+	assert.True(t, ok)
+	assert.Equal(t, someCode, impl.Code())
 }
 
 func TestUnit_Error_MarshalJSON(t *testing.T) {
-	assert := assert.New(t)
-
 	err := New("haha")
 	out, mErr := json.Marshal(err)
 
@@ -180,19 +156,19 @@ func TestUnit_Error_MarshalJSON(t *testing.T) {
 		"Code": 1,
 		"Message": "haha"
 	}`
-	assert.Nil(mErr)
-	assert.JSONEq(expected, string(out))
+	assert.Nil(t, mErr)
+	assert.JSONEq(t, expected, string(out))
 
 	err = NewCode(someCode)
 	out, mErr = json.Marshal(err)
 
-	assert.Nil(mErr)
+	assert.Nil(t, mErr)
 	expected = `
 	{
 		"Code": 26,
 		"Message": "An unexpected error occurred"
 	}`
-	assert.JSONEq(expected, string(out))
+	assert.JSONEq(t, expected, string(out))
 
 	err = Wrap(errSomeError, "hihi")
 	out, mErr = json.Marshal(err)
@@ -203,8 +179,8 @@ func TestUnit_Error_MarshalJSON(t *testing.T) {
 		"Message": "hihi",
 		"Cause": "some error"
 	}`
-	assert.Nil(mErr)
-	assert.JSONEq(expected, string(out))
+	assert.Nil(t, mErr)
+	assert.JSONEq(t, expected, string(out))
 
 	err = Wrap(New("haha"), "hihi")
 	out, mErr = json.Marshal(err)
@@ -218,16 +194,14 @@ func TestUnit_Error_MarshalJSON(t *testing.T) {
 			"Message": "haha"
 		}
 	}`
-	assert.Nil(mErr)
-	assert.JSONEq(expected, string(out))
+	assert.Nil(t, mErr)
+	assert.JSONEq(t, expected, string(out))
 }
 
 func TestUnit_Error_IsErrorWithCode(t *testing.T) {
-	assert := assert.New(t)
-
-	assert.False(IsErrorWithCode(nil, someCode))
-	assert.False(IsErrorWithCode(errSomeError, someCode))
-	assert.True(IsErrorWithCode(NewCode(someCode), someCode))
-	assert.False(IsErrorWithCode(NewCode(27), someCode))
-	assert.False(IsErrorWithCode(New("haha"), someCode))
+	assert.False(t, IsErrorWithCode(nil, someCode))
+	assert.False(t, IsErrorWithCode(errSomeError, someCode))
+	assert.True(t, IsErrorWithCode(NewCode(someCode), someCode))
+	assert.False(t, IsErrorWithCode(NewCode(27), someCode))
+	assert.False(t, IsErrorWithCode(New("haha"), someCode))
 }

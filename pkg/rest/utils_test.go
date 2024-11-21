@@ -7,8 +7,6 @@ import (
 )
 
 func TestUnit_SanitizePath(t *testing.T) {
-	assert := assert.New(t)
-
 	type testCase struct {
 		in       string
 		expected string
@@ -38,14 +36,12 @@ func TestUnit_SanitizePath(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			actual := sanitizePath(testCase.in)
 
-			assert.Equal(testCase.expected, actual)
+			assert.Equal(t, testCase.expected, actual)
 		})
 	}
 }
 
 func TestUnit_ConcatenateEndpoints(t *testing.T) {
-	assert := assert.New(t)
-
 	type testCase struct {
 		basePath string
 		path     string
@@ -69,7 +65,7 @@ func TestUnit_ConcatenateEndpoints(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			actual := ConcatenateEndpoints(testCase.basePath, testCase.path)
 
-			assert.Equal(testCase.expected, actual)
+			assert.Equal(t, testCase.expected, actual)
 		})
 	}
 }

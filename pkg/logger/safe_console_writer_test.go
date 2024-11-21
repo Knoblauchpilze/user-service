@@ -16,9 +16,8 @@ func TestUnit_SafeConsoleWriter_WritesToProvidedWriter(t *testing.T) {
 	data := []byte("hello")
 	actual, err := safeWriter.Write(data)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Equal(len(data), actual)
+	assert.Nil(t, err)
+	assert.Equal(t, len(data), actual)
 }
 
 type mockWriter struct {
@@ -38,6 +37,5 @@ func TestUnit_SafeConsoleWriter_WhenWriterFails_ExpectFailure(t *testing.T) {
 
 	_, err := safeWriter.Write([]byte{})
 
-	assert := assert.New(t)
-	assert.Equal(m.err, err)
+	assert.Equal(t, m.err, err)
 }

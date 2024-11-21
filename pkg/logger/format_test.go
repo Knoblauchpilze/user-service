@@ -44,8 +44,7 @@ func TestUnit_Format(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			actual := FormatWithColor("hello", testCase.color)
 
-			assert := assert.New(t)
-			assert.Equal(testCase.expectedText, actual)
+			assert.Equal(t, testCase.expectedText, actual)
 		})
 	}
 }

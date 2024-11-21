@@ -17,9 +17,8 @@ func TestIT_Transaction_Exec_AlreadyCommitted(t *testing.T) {
 
 	affectedRows, err := tx.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE name = 'test-name'")
 
-	assert := assert.New(t)
-	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
+	assert.Equal(t, int64(0), affectedRows)
+	assert.True(t, errors.IsErrorWithCode(err, AlreadyCommitted), "Actual err: %v", err)
 }
 
 func TestIT_Transaction_Exec_Select(t *testing.T) {
@@ -27,10 +26,8 @@ func TestIT_Transaction_Exec_Select(t *testing.T) {
 	defer tx.Close(context.Background())
 
 	affectedRows, err := tx.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE name = 'test-name'")
-
-	assert := assert.New(t)
-	assert.Equal(int64(1), affectedRows)
-	assert.Nil(err)
+	assert.Equal(t, int64(1), affectedRows)
+	assert.Nil(t, err)
 }
 
 func TestIT_Transaction_Exec_Insert(t *testing.T) {
@@ -49,28 +46,26 @@ func TestIT_Transaction_Exec_Insert(t *testing.T) {
 
 func TestIT_Transaction_Exec_Update(t *testing.T) {
 	conn, tx := newTestTransaction(t)
+	element := insertTestDataTx(t, tx)
 
-	id, _ := insertTestDataTx(t, tx)
 	newName := uuid.New().String()
-
-	_, err := tx.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", newName, id)
+	_, err := tx.Exec(context.Background(), "UPDATE my_table SET name = $1 WHERE id = $2", newName, element.Id)
 	require.Nil(t, err)
 
 	tx.Close(context.Background())
 
-	assertNameForId(t, conn, id, newName)
+	assertNameForId(t, conn, element.Id, newName)
 }
 
 func TestIT_Transaction_Exec_Delete(t *testing.T) {
 	conn, tx := newTestTransaction(t)
+	element := insertTestDataTx(t, tx)
 
-	id, _ := insertTestDataTx(t, tx)
-
-	_, err := tx.Exec(context.Background(), "DELETE FROM my_table WHERE id = $1", id)
+	_, err := tx.Exec(context.Background(), "DELETE FROM my_table WHERE id = $1", element.Id)
 	require.Nil(t, err)
 
 	tx.Close(context.Background())
-	assertIdDoesNotExist(t, conn, id)
+	assertIdDoesNotExist(t, conn, element.Id)
 }
 
 func TestIT_Transaction_Exec_WithArguments(t *testing.T) {
@@ -79,9 +74,8 @@ func TestIT_Transaction_Exec_WithArguments(t *testing.T) {
 
 	affectedRows, err := tx.Exec(context.Background(), "SELECT COUNT(*) FROM my_table WHERE name = $1", "test-name")
 
-	assert := assert.New(t)
-	assert.Equal(int64(1), affectedRows)
-	assert.Nil(err)
+	assert.Equal(t, int64(1), affectedRows)
+	assert.Nil(t, err)
 }
 
 func TestIT_Transaction_Exec_WrongSyntax(t *testing.T) {
@@ -90,19 +84,18 @@ func TestIT_Transaction_Exec_WrongSyntax(t *testing.T) {
 
 	affectedRows, err := tx.Exec(context.Background(), "DESELECT COUNT(*) FROM my_table WHERE name = 'test-name'")
 
-	assert := assert.New(t)
-	assert.Equal(int64(0), affectedRows)
-	assert.True(errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
+	assert.Equal(t, int64(0), affectedRows)
+	assert.True(t, errors.IsErrorWithCode(err, pgx.GenericSqlError), "Actual err: %v", err)
 }
 
 func TestIT_Transaction_Exec_WhenError_ExpectRollback(t *testing.T) {
 	conn, tx := newTestTransaction(t)
 
-	id, _ := insertTestDataTx(t, tx)
-	_, err := tx.Exec(context.Background(), "DESELECT COUNT(*) FROM my_table WHERE name = 'test-name'")
+	element := insertTestDataTx(t, tx)
+	_, err := tx.Exec(context.Background(), "DESELECT COUNT(*) FROM my_table WHERE name = $1", element.Name)
 	require.NotNil(t, err)
 
 	tx.Close(context.Background())
 
-	assertIdDoesNotExist(t, conn, id)
+	assertIdDoesNotExist(t, conn, element.Id)
 }

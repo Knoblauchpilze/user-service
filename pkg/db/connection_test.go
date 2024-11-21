@@ -25,7 +25,7 @@ func TestUnit_New_InvalidConfiguration(t *testing.T) {
 	assert.NotNil(err)
 }
 
-func TestUnit_New_ValidConfiguration_InvalidCredentials(t *testing.T) {
+func TestIT_New_ValidConfiguration_InvalidCredentials(t *testing.T) {
 	config := dbTestConfig
 	config.Password = "not-the-right-password"
 

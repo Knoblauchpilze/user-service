@@ -85,8 +85,6 @@ func TestUnit_GenerateConnectionString(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run("", func(t *testing.T) {
-			assert := assert.New(t)
-
 			config := Config{
 				Host:           testCase.host,
 				Port:           testCase.port,
@@ -98,7 +96,7 @@ func TestUnit_GenerateConnectionString(t *testing.T) {
 
 			actual := generateConnectionString(config)
 
-			assert.Equal(testCase.expectedConnectionString, actual)
+			assert.Equal(t, testCase.expectedConnectionString, actual)
 		})
 	}
 }

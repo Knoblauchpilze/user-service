@@ -12,15 +12,11 @@ import (
 var testHandler = func(c echo.Context) error { return nil }
 
 func TestUnit_Route_Method(t *testing.T) {
-	assert := assert.New(t)
-
 	r := NewRoute(http.MethodGet, "", testHandler)
-	assert.Equal(http.MethodGet, r.Method())
+	assert.Equal(t, http.MethodGet, r.Method())
 }
 
 func TestUnit_Route_Handler(t *testing.T) {
-	assert := assert.New(t)
-
 	handlerCalled := false
 	handler := func(c echo.Context) error {
 		handlerCalled = true
@@ -31,7 +27,7 @@ func TestUnit_Route_Handler(t *testing.T) {
 	actual := r.Handler()
 	actual(dummyEchoContext())
 
-	assert.True(handlerCalled)
+	assert.True(t, handlerCalled)
 }
 
 func TestUnit_Route_Path(t *testing.T) {
@@ -55,8 +51,7 @@ func TestUnit_Route_Path(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			r := NewRoute(http.MethodGet, tc.path, testHandler)
 
-			assert := assert.New(t)
-			assert.Equal(tc.expected, r.Path())
+			assert.Equal(t, tc.expected, r.Path())
 		})
 	}
 }

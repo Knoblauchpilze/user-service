@@ -28,8 +28,7 @@ func TestUnit_AuthService_Authenticate_WhenKeyDoesNotExist_ExpectFailure(t *test
 	service := newTestAuthService(repo)
 	_, err := service.Authenticate(context.Background(), uuid.New())
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, UserNotAuthenticated), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, UserNotAuthenticated), "Actual err: %v", err)
 }
 
 func TestUnit_AuthService_Authenticate_WhenKeyExpired_ExpectFailure(t *testing.T) {
@@ -43,8 +42,7 @@ func TestUnit_AuthService_Authenticate_WhenKeyExpired_ExpectFailure(t *testing.T
 	service := newTestAuthService(repo)
 	_, err := service.Authenticate(context.Background(), uuid.New())
 
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, AuthenticationExpired), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, AuthenticationExpired), "Actual err: %v", err)
 }
 
 func TestIT_AuthService_Authenticate_WhenAuthenticated_ExpectSuccess(t *testing.T) {
@@ -58,8 +56,7 @@ func TestIT_AuthService_Authenticate_WhenAuthenticated_ExpectSuccess(t *testing.
 	service := NewAuthService(repos)
 	_, err := service.Authenticate(context.Background(), apiKey.Key)
 
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 }
 
 func (m *mockApiKeyRepository) GetForKey(ctx context.Context, apiKey uuid.UUID) (persistence.ApiKey, error) {

@@ -17,13 +17,12 @@ func TestUnit_Logger_Printf(t *testing.T) {
 
 	log.Printf("hello %s", "John")
 
-	assert := assert.New(t)
 	expectedJson := `
 	{
 		"level": "debug",
 		"message": "hello John"
 	}`
-	assert.JSONEq(expectedJson, out.String())
+	assert.JSONEq(t, expectedJson, out.String())
 }
 
 func TestUnit_Logger_Printf_NoArg(t *testing.T) {
@@ -33,13 +32,12 @@ func TestUnit_Logger_Printf_NoArg(t *testing.T) {
 
 	log.Printf("hello")
 
-	assert := assert.New(t)
 	expectedJson := `
 	{
 		"level": "debug",
 		"message": "hello"
 	}`
-	assert.JSONEq(expectedJson, out.String())
+	assert.JSONEq(t, expectedJson, out.String())
 }
 
 func TestUnit_Logger_WhenUsingPrintfInConsole_ExpectNilTime(t *testing.T) {
@@ -54,9 +52,8 @@ func TestUnit_Logger_WhenUsingPrintfInConsole_ExpectNilTime(t *testing.T) {
 
 	log.Printf("test")
 
-	assert := assert.New(t)
 	expectedString := "\x1b[90m<nil>\x1b[0m DBG test\n"
-	assert.Equal(expectedString, buf.String())
+	assert.Equal(t, expectedString, buf.String())
 }
 
 func TestUnit_Logger_Tracef(t *testing.T) {
@@ -67,9 +64,8 @@ func TestUnit_Logger_Tracef(t *testing.T) {
 
 	log.Tracef("hello %s", "John")
 
-	assert := assert.New(t)
 	traceRegex := regexp.MustCompile(`{"level":"trace","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
-	assert.Regexp(traceRegex, out.String())
+	assert.Regexp(t, traceRegex, out.String())
 }
 
 func TestUnit_Logger_Debugf(t *testing.T) {
@@ -79,9 +75,8 @@ func TestUnit_Logger_Debugf(t *testing.T) {
 
 	log.Debugf("hello %s", "John")
 
-	assert := assert.New(t)
 	traceRegex := regexp.MustCompile(`{"level":"debug","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
-	assert.Regexp(traceRegex, out.String())
+	assert.Regexp(t, traceRegex, out.String())
 }
 
 func TestUnit_Logger_Infof(t *testing.T) {
@@ -91,9 +86,8 @@ func TestUnit_Logger_Infof(t *testing.T) {
 
 	log.Infof("hello %s", "John")
 
-	assert := assert.New(t)
 	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
-	assert.Regexp(traceRegex, out.String())
+	assert.Regexp(t, traceRegex, out.String())
 }
 
 func TestUnit_Logger_Warnf(t *testing.T) {
@@ -103,9 +97,8 @@ func TestUnit_Logger_Warnf(t *testing.T) {
 
 	log.Warnf("hello %s", "John")
 
-	assert := assert.New(t)
 	traceRegex := regexp.MustCompile(`{"level":"warn","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
-	assert.Regexp(traceRegex, out.String())
+	assert.Regexp(t, traceRegex, out.String())
 }
 
 func TestUnit_Logger_Errorf(t *testing.T) {
@@ -115,9 +108,8 @@ func TestUnit_Logger_Errorf(t *testing.T) {
 
 	log.Errorf("hello %s", "John")
 
-	assert := assert.New(t)
 	traceRegex := regexp.MustCompile(`{"level":"error","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"hello John"}`)
-	assert.Regexp(traceRegex, out.String())
+	assert.Regexp(t, traceRegex, out.String())
 }
 
 func TestUnit_Logger_WhenLogLevelDoesNotAllowLogging_ExpectNotLogged(t *testing.T) {
@@ -128,8 +120,7 @@ func TestUnit_Logger_WhenLogLevelDoesNotAllowLogging_ExpectNotLogged(t *testing.
 
 	log.Debugf("hello %s", "John")
 
-	assert := assert.New(t)
-	assert.Regexp(0, out.Len())
+	assert.Regexp(t, 0, out.Len())
 }
 
 func TestUnit_Logger_WhenOnlyPrefixIsSet_ExpectItToBeLogged(t *testing.T) {
@@ -140,9 +131,8 @@ func TestUnit_Logger_WhenOnlyPrefixIsSet_ExpectItToBeLogged(t *testing.T) {
 
 	log.Infof("hello %s", "John")
 
-	assert := assert.New(t)
 	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"\[my-prefix\] hello John"}`)
-	assert.Regexp(traceRegex, out.String())
+	assert.Regexp(t, traceRegex, out.String())
 }
 
 func TestUnit_Logger_WhenOnlyHeaderIsSet_ExpectItToBeLogged(t *testing.T) {
@@ -153,9 +143,8 @@ func TestUnit_Logger_WhenOnlyHeaderIsSet_ExpectItToBeLogged(t *testing.T) {
 
 	log.Infof("hello %s", "John")
 
-	assert := assert.New(t)
 	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"\[my-header\] hello John"}`)
-	assert.Regexp(traceRegex, out.String())
+	assert.Regexp(t, traceRegex, out.String())
 }
 
 func TestUnit_Logger_WhenBothPrefixHeaderIsSet_ExpectThemToBeLoggedInTheRightOrder(t *testing.T) {
@@ -167,9 +156,8 @@ func TestUnit_Logger_WhenBothPrefixHeaderIsSet_ExpectThemToBeLoggedInTheRightOrd
 
 	log.Infof("hello %s", "John")
 
-	assert := assert.New(t)
 	traceRegex := regexp.MustCompile(`{"level":"info","time":"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([0-9:+]+|Z)?","message":"\[my-header\] \[my-prefix\] hello John"}`)
-	assert.Regexp(traceRegex, out.String())
+	assert.Regexp(t, traceRegex, out.String())
 }
 
 func TestUnit_Logger_WhenSettingNewOutput_ExpectItToBeUsed(t *testing.T) {
@@ -180,14 +168,13 @@ func TestUnit_Logger_WhenSettingNewOutput_ExpectItToBeUsed(t *testing.T) {
 	log.SetOutput(&out2)
 
 	log.Printf("hello %s", "John")
-	assert := assert.New(t)
 	expectedJson := `
 	{
 		"level": "debug",
 		"message": "hello John"
 	}`
-	assert.JSONEq(expectedJson, out2.String())
-	assert.Equal(0, out1.Len())
+	assert.JSONEq(t, expectedJson, out2.String())
+	assert.Equal(t, 0, out1.Len())
 }
 
 func TestUnit_Logger_WhenCloning_WritesToSameOutput(t *testing.T) {

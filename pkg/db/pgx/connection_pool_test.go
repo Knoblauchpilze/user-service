@@ -13,20 +13,18 @@ import (
 func TestUnit_New_InvalidConnectionString(t *testing.T) {
 	pool, err := New(context.Background(), "invalid-connection-string")
 
-	assert := assert.New(t)
-	assert.Nil(pool)
-	assert.NotNil(err)
+	assert.Nil(t, pool)
+	assert.NotNil(t, err)
 	_, ok := err.(*pgconn.ParseConfigError)
-	assert.True(ok)
+	assert.True(t, ok)
 }
 
 func TestUnit_New_ValidConnectionString(t *testing.T) {
 	const connStr = "postgres://user:password@localhost/my-db"
 	pool, err := New(context.Background(), connStr)
 
-	assert := assert.New(t)
-	assert.NotNil(pool)
-	assert.Nil(err)
+	assert.NotNil(t, pool)
+	assert.Nil(t, err)
 }
 
 func TestIT_New_ConnectsToDatabase(t *testing.T) {
@@ -35,8 +33,7 @@ func TestIT_New_ConnectsToDatabase(t *testing.T) {
 	require.Nil(t, err)
 
 	err = pool.Ping(context.Background())
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 }
 
 func TestIT_New_ConnectsToDatabase_WrongCredentials(t *testing.T) {

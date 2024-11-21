@@ -27,11 +27,9 @@ func TestIT_ApiKeyRepository_Create(t *testing.T) {
 	}
 
 	actual, err := repo.Create(context.Background(), apiKey)
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 
-	assert.Equal(apiKey, actual)
-
+	assert.Equal(t, apiKey, actual)
 	assertApiKeyExists(t, conn, apiKey.Id)
 }
 
@@ -48,11 +46,10 @@ func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectKeyIsReturned(t *
 
 	actual, err := repo.Create(context.Background(), apiKey)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Equal(uuid.MustParse("fd8136c4-c584-4bbf-a390-53d5c2548fb8"), actual.Id)
-	assert.Equal(apiKey.ApiUser, actual.ApiUser)
-	assert.Equal(uuid.MustParse("2da3e9ec-7299-473a-be0f-d722d870f51a"), actual.Key)
+	assert.Nil(t, err)
+	assert.Equal(t, uuid.MustParse("fd8136c4-c584-4bbf-a390-53d5c2548fb8"), actual.Id)
+	assert.Equal(t, apiKey.ApiUser, actual.ApiUser)
+	assert.Equal(t, uuid.MustParse("2da3e9ec-7299-473a-be0f-d722d870f51a"), actual.Key)
 }
 
 func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectValidityExtended(t *testing.T) {
@@ -75,10 +72,9 @@ func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectValidityExtended(
 	updated, err := repo.Get(context.Background(), old.Id)
 	require.Nil(t, err)
 
-	assert := assert.New(t)
-	assert.Nil(err)
-	assert.Equal(apiKey.ValidUntil, actual.ValidUntil)
-	assert.Equal(apiKey.ValidUntil, updated.ValidUntil.UTC())
+	assert.Nil(t, err)
+	assert.Equal(t, apiKey.ValidUntil, actual.ValidUntil)
+	assert.Equal(t, apiKey.ValidUntil, updated.ValidUntil.UTC())
 }
 
 func TestIT_ApiKeyRepository_Get(t *testing.T) {
@@ -87,13 +83,11 @@ func TestIT_ApiKeyRepository_Get(t *testing.T) {
 	_, apiKey := insertTestApiKey(t, conn)
 
 	actual, err := repo.Get(context.Background(), apiKey.Id)
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 
 	actualUtc := actual
 	actualUtc.ValidUntil = actual.ValidUntil.UTC()
-
-	assert.Equal(apiKey, actualUtc)
+	assert.Equal(t, apiKey, actualUtc)
 }
 
 func TestIT_ApiKeyRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
@@ -102,8 +96,7 @@ func TestIT_ApiKeyRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.Get(context.Background(), id)
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_GetForKey(t *testing.T) {
@@ -112,13 +105,11 @@ func TestIT_ApiKeyRepository_GetForKey(t *testing.T) {
 	_, apiKey := insertTestApiKey(t, conn)
 
 	actual, err := repo.GetForKey(context.Background(), apiKey.Key)
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 
 	actualUtc := actual
 	actualUtc.ValidUntil = actual.ValidUntil.UTC()
-
-	assert.Equal(apiKey, actualUtc)
+	assert.Equal(t, apiKey, actualUtc)
 }
 
 func TestIT_ApiKeyRepository_GetForKey_WhenNotFound_ExpectFailure(t *testing.T) {
@@ -127,8 +118,7 @@ func TestIT_ApiKeyRepository_GetForKey_WhenNotFound_ExpectFailure(t *testing.T) 
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.GetForKey(context.Background(), id)
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_GetForUser(t *testing.T) {
@@ -137,13 +127,11 @@ func TestIT_ApiKeyRepository_GetForUser(t *testing.T) {
 	_, apiKey := insertTestApiKey(t, conn)
 
 	actual, err := repo.GetForUser(context.Background(), apiKey.ApiUser)
-	assert := assert.New(t)
-	assert.Nil(err)
+	assert.Nil(t, err)
 
 	actualUtc := actual
 	actualUtc.ValidUntil = actual.ValidUntil.UTC()
-
-	assert.Equal(apiKey, actualUtc)
+	assert.Equal(t, apiKey, actualUtc)
 }
 
 func TestIT_ApiKeyRepository_GetForUser_WhenNotFound_ExpectFailure(t *testing.T) {
@@ -152,8 +140,7 @@ func TestIT_ApiKeyRepository_GetForUser_WhenNotFound_ExpectFailure(t *testing.T)
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.GetForUser(context.Background(), id)
-	assert := assert.New(t)
-	assert.True(errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_Delete(t *testing.T) {
@@ -164,9 +151,7 @@ func TestIT_ApiKeyRepository_Delete(t *testing.T) {
 	err := repo.DeleteForUser(context.Background(), tx, user.Id)
 	tx.Close(context.Background())
 
-	assert := assert.New(t)
-	assert.Nil(err)
-
+	assert.Nil(t, err)
 	assertApiKeyDoesNotExist(t, conn, apiKey.Id)
 }
 
@@ -180,9 +165,7 @@ func TestIT_ApiKeyRepository_Delete_WhenNotFound_ExpectSuccess(t *testing.T) {
 	err := repo.DeleteForUser(context.Background(), tx, id)
 	tx.Close(context.Background())
 
-	assert := assert.New(t)
-	assert.Nil(err)
-
+	assert.Nil(t, err)
 	assertApiKeyExists(t, conn, apiKey.Id)
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/KnoblauchPilze/user-service/internal/service"
 	"github.com/KnoblauchPilze/user-service/pkg/communication"
 	"github.com/KnoblauchPilze/user-service/pkg/db"
+	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
 	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/KnoblauchPilze/user-service/pkg/repositories"
 	"github.com/KnoblauchPilze/user-service/pkg/rest"
@@ -63,8 +64,8 @@ func createUser(c echo.Context, s service.UserService) error {
 		if errors.IsErrorWithCode(err, service.InvalidPassword) {
 			return c.JSON(http.StatusBadRequest, "Invalid password")
 		}
-		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
-			return c.JSON(http.StatusConflict, "Email already used")
+		if errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation) {
+			return c.JSON(http.StatusConflict, "Email already in use")
 		}
 
 		return c.JSON(http.StatusInternalServerError, err)

@@ -139,10 +139,6 @@ func deleteUser(c echo.Context, s service.UserService) error {
 
 	err = s.Delete(c.Request().Context(), id)
 	if err != nil {
-		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
-			return c.JSON(http.StatusNotFound, "No such user")
-		}
-
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 

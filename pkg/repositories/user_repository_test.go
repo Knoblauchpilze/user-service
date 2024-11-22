@@ -34,32 +34,34 @@ func TestIT_UserRepository_Create(t *testing.T) {
 }
 
 func TestIT_UserRepository_Create_WhenDuplicateName_ExpectFailure(t *testing.T) {
-	repo, _ := newTestUserRepository(t)
+	repo, conn := newTestUserRepository(t)
+	user := insertTestUser(t, conn)
 
-	user := persistence.User{
+	newUser := persistence.User{
 		Id:        uuid.New(),
-		Email:     "user1",
+		Email:     user.Email,
 		Password:  "my-password",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		Version:   6,
 	}
 
-	_, err := repo.Create(context.Background(), user)
+	_, err := repo.Create(context.Background(), newUser)
 
 	assert.True(t, errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
+	assertUserDoesNotExist(t, conn, newUser.Id)
 }
 
 func TestIT_UserRepository_Get(t *testing.T) {
-	repo, _ := newTestUserRepository(t)
+	repo, conn := newTestUserRepository(t)
+	user := insertTestUser(t, conn)
 
-	id := uuid.MustParse("4f26321f-d0ea-46a3-83dd-6aa1c6053aaf")
-	actual, err := repo.Get(context.Background(), id)
+	actual, err := repo.Get(context.Background(), user.Id)
 	assert.Nil(t, err)
 
-	assert.Equal(t, id, actual.Id)
-	assert.Equal(t, "another-test-user@another-provider.com", actual.Email)
-	assert.Equal(t, "super-strong-password", actual.Password)
+	assert.Equal(t, user.Id, actual.Id)
+	assert.Equal(t, user.Email, actual.Email)
+	assert.Equal(t, user.Password, actual.Password)
 	assert.Equal(t, 0, actual.Version)
 }
 
@@ -73,14 +75,15 @@ func TestIT_UserRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_UserRepository_GetByEmail(t *testing.T) {
-	repo, _ := newTestUserRepository(t)
+	repo, conn := newTestUserRepository(t)
+	user := insertTestUser(t, conn)
 
-	actual, err := repo.GetByEmail(context.Background(), "better-test-user@mail-client.org")
+	actual, err := repo.GetByEmail(context.Background(), user.Email)
 	assert.Nil(t, err)
 
-	assert.Equal(t, uuid.MustParse("00b265e6-6638-4b1b-aeac-5898c7307eb8"), actual.Id)
-	assert.Equal(t, "better-test-user@mail-client.org", actual.Email)
-	assert.Equal(t, "weakpassword", actual.Password)
+	assert.Equal(t, user.Id, actual.Id)
+	assert.Equal(t, user.Email, actual.Email)
+	assert.Equal(t, user.Password, actual.Password)
 	assert.Equal(t, 0, actual.Version)
 }
 
@@ -92,16 +95,16 @@ func TestIT_UserRepository_GetByEmail_WhenNotFound_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_UserRepository_List(t *testing.T) {
-	repo, _ := newTestUserRepository(t)
+	repo, conn := newTestUserRepository(t)
+	u1 := insertTestUser(t, conn)
+	u2 := insertTestUser(t, conn)
 
 	ids, err := repo.List(context.Background())
 
 	assert.Nil(t, err)
-	assert.GreaterOrEqual(t, len(ids), 4)
-	assert.Contains(t, ids, uuid.MustParse("0463ed3d-bfc9-4c10-b6ee-c223bbca0fab"))
-	assert.Contains(t, ids, uuid.MustParse("4f26321f-d0ea-46a3-83dd-6aa1c6053aaf"))
-	assert.Contains(t, ids, uuid.MustParse("00b265e6-6638-4b1b-aeac-5898c7307eb8"))
-	assert.Contains(t, ids, uuid.MustParse("beb2a2dc-2a9f-48d6-b2ca-fd3b5ca3249f"))
+	assert.GreaterOrEqual(t, len(ids), 2)
+	assert.Contains(t, ids, u1.Id)
+	assert.Contains(t, ids, u2.Id)
 }
 
 func TestIT_UserRepository_Update(t *testing.T) {

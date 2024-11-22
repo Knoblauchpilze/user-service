@@ -34,47 +34,50 @@ func TestIT_ApiKeyRepository_Create(t *testing.T) {
 }
 
 func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectKeyIsReturned(t *testing.T) {
-	repo, _ := newTestApiKeyRepository(t)
+	repo, conn := newTestApiKeyRepository(t)
+	_, apiKey := insertTestApiKey(t, conn)
 
-	apiKey := persistence.ApiKey{
+	newKey := persistence.ApiKey{
 		Id:      uuid.New(),
 		Key:     uuid.New(),
-		ApiUser: uuid.MustParse("4f26321f-d0ea-46a3-83dd-6aa1c6053aaf"),
+		ApiUser: apiKey.ApiUser,
 
 		ValidUntil: time.Date(2024, 11, 12, 18, 34, 40, 0, time.UTC),
 	}
 
-	actual, err := repo.Create(context.Background(), apiKey)
+	require.NotEqual(t, apiKey.Id, newKey.Id)
+	require.NotEqual(t, apiKey.Key, newKey.Key)
+
+	actual, err := repo.Create(context.Background(), newKey)
 
 	assert.Nil(t, err)
-	assert.Equal(t, uuid.MustParse("fd8136c4-c584-4bbf-a390-53d5c2548fb8"), actual.Id)
+	assert.Equal(t, apiKey.Id, actual.Id)
 	assert.Equal(t, apiKey.ApiUser, actual.ApiUser)
-	assert.Equal(t, uuid.MustParse("2da3e9ec-7299-473a-be0f-d722d870f51a"), actual.Key)
+	assert.Equal(t, apiKey.Key, actual.Key)
+	assertApiKeyDoesNotExist(t, conn, newKey.Id)
 }
 
 func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectValidityExtended(t *testing.T) {
-	repo, _ := newTestApiKeyRepository(t)
+	repo, conn := newTestApiKeyRepository(t)
+	_, apiKey := insertTestApiKey(t, conn)
 
-	old, err := repo.Get(context.Background(), uuid.MustParse("fd8136c4-c584-4bbf-a390-53d5c2548fb8"))
-	require.Nil(t, err)
-
-	apiKey := persistence.ApiKey{
-		Id:      old.Id,
-		Key:     old.Key,
-		ApiUser: old.ApiUser,
+	newKey := persistence.ApiKey{
+		Id:      uuid.New(),
+		Key:     uuid.New(),
+		ApiUser: apiKey.ApiUser,
 
 		ValidUntil: time.Date(2024, 11, 12, 18, 34, 40, 0, time.UTC),
 	}
 
-	actual, err := repo.Create(context.Background(), apiKey)
+	actual, err := repo.Create(context.Background(), newKey)
 	require.Nil(t, err)
 
-	updated, err := repo.Get(context.Background(), old.Id)
+	updated, err := repo.Get(context.Background(), apiKey.Id)
 	require.Nil(t, err)
 
 	assert.Nil(t, err)
-	assert.Equal(t, apiKey.ValidUntil, actual.ValidUntil)
-	assert.Equal(t, apiKey.ValidUntil, updated.ValidUntil.UTC())
+	assert.Equal(t, newKey.ValidUntil, actual.ValidUntil)
+	assert.Equal(t, newKey.ValidUntil, updated.ValidUntil.UTC())
 }
 
 func TestIT_ApiKeyRepository_Get(t *testing.T) {

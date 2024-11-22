@@ -315,6 +315,62 @@ func TestUnit_UserController_LogoutUser_WhenIdHasWrongSyntax_ExpectBadRequest(t 
 	assertStatusCodeAndBody[service.UserService](t, req, m, logoutUser, http.StatusBadRequest, expectedBody)
 }
 
+func TestIT_UserController_LogoutUser(t *testing.T) {
+	conn := newTestConnection(t)
+	user := insertTestUser(t, conn)
+	apiKey := insertApiKeyForUser(t, conn, user.Id)
+
+	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
+	ctx, rw := generateTestEchoContextFromRequest(req)
+	ctx.SetParamNames("id")
+	ctx.SetParamValues(user.Id.String())
+
+	service, _ := createTestUserService(t)
+
+	err := logoutUser(ctx, service)
+	assert.Nil(t, err)
+
+	assert.Equal(t, http.StatusNoContent, rw.Code)
+	assertApiKeyDoesNotExist(t, conn, apiKey.Id)
+	assertUserExists(t, conn, user.Id)
+}
+
+func TestIT_UserController_LogoutUser_WhenNotLoggedIn_ExpectSuccess(t *testing.T) {
+	conn := newTestConnection(t)
+	user := insertTestUser(t, conn)
+
+	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
+	ctx, rw := generateTestEchoContextFromRequest(req)
+	ctx.SetParamNames("id")
+	ctx.SetParamValues(user.Id.String())
+
+	service, _ := createTestUserService(t)
+
+	err := logoutUser(ctx, service)
+	assert.Nil(t, err)
+
+	assert.Equal(t, http.StatusNoContent, rw.Code)
+	assertUserExists(t, conn, user.Id)
+}
+
+func TestIT_UserController_LogoutUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+	// Non-existent id
+	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
+
+	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
+	ctx, rw := generateTestEchoContextFromRequest(req)
+	ctx.SetParamNames("id")
+	ctx.SetParamValues(id.String())
+
+	service, _ := createTestUserService(t)
+
+	err := logoutUser(ctx, service)
+	assert.Nil(t, err)
+
+	assert.Equal(t, http.StatusNotFound, rw.Code)
+	assert.Equal(t, "\"No such user\"\n", rw.Body.String())
+}
+
 func createTestUserService(t *testing.T) (service.UserService, db.Connection) {
 	conn := newTestConnection(t)
 

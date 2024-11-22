@@ -94,6 +94,12 @@ func assertUserDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {
 	require.Zero(t, value)
 }
 
+func assertEmailForUser(t *testing.T, conn db.Connection, user uuid.UUID, expectedEmail string) {
+	value, err := db.QueryOne[string](context.Background(), conn, "SELECT email FROM api_user WHERE id = $1", user)
+	require.Nil(t, err)
+	require.Equal(t, expectedEmail, value)
+}
+
 func insertApiKeyForUser(t *testing.T, conn db.Connection, userId uuid.UUID) persistence.ApiKey {
 	repo := repositories.NewApiKeyRepository(conn)
 
@@ -116,6 +122,12 @@ func assertApiKeyExists(t *testing.T, conn db.Connection, id uuid.UUID) {
 	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT id FROM api_key WHERE id = $1", id)
 	require.Nil(t, err)
 	require.Equal(t, id, value)
+}
+
+func assertApiKeyExistsByKey(t *testing.T, conn db.Connection, key uuid.UUID) {
+	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT key FROM api_key WHERE key = $1", key)
+	require.Nil(t, err)
+	require.Equal(t, key, value)
 }
 
 func assertApiKeyDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {

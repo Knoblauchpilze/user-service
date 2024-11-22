@@ -370,6 +370,90 @@ func TestUnit_UserController_LoginUserByEmail_WhenUserHasWrongSyntax_ExpectBadRe
 	assertStatusCodeAndBody[service.UserService](t, req, m, loginUserByEmail, http.StatusBadRequest, expectedBody)
 }
 
+func TestIT_UserController_LoginUserByEmail(t *testing.T) {
+	conn := newTestConnection(t)
+	user := insertTestUser(t, conn)
+
+	requestDto := communication.UserDtoRequest{
+		Email:    user.Email,
+		Password: user.Password,
+	}
+
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(requestDto)
+	require.Nil(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/", &body)
+	req.Header.Set("Content-Type", "application/json")
+	ctx, rw := generateTestEchoContextFromRequest(req)
+
+	service, _ := createTestUserService(t)
+
+	err = loginUserByEmail(ctx, service)
+	assert.Nil(t, err)
+
+	var responseDto communication.ApiKeyDtoResponse
+	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
+	require.Nil(t, err)
+
+	assert.Equal(t, http.StatusCreated, rw.Code)
+	assertEmailForUser(t, conn, user.Id, requestDto.Email)
+	assert.Equal(t, user.Id, responseDto.User)
+	assertApiKeyExistsByKey(t, conn, responseDto.Key)
+	expectedApproximateValidity := time.Now().Add(1 * time.Hour)
+	safetyMargin := 5 * time.Second
+	assert.True(t, areTimeCloserThan(responseDto.ValidUntil, expectedApproximateValidity, safetyMargin))
+}
+
+func TestIT_UserController_LoginUserByEmail_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+	requestDto := communication.UserDtoRequest{
+		Email:    fmt.Sprintf("some-email-%s", uuid.NewString()),
+		Password: "my-password",
+	}
+
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(requestDto)
+	require.Nil(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/", &body)
+	req.Header.Set("Content-Type", "application/json")
+	ctx, rw := generateTestEchoContextFromRequest(req)
+
+	service, _ := createTestUserService(t)
+
+	err = loginUserByEmail(ctx, service)
+	assert.Nil(t, err)
+
+	assert.Equal(t, http.StatusNotFound, rw.Code)
+	assert.Equal(t, "\"No such user\"\n", rw.Body.String())
+}
+
+func TestIT_UserController_LoginUserByEmail_WhenPasswordDoesNotMatch_ExpectFailure(t *testing.T) {
+	conn := newTestConnection(t)
+	user := insertTestUser(t, conn)
+
+	requestDto := communication.UserDtoRequest{
+		Email:    user.Email,
+		Password: fmt.Sprintf("%s-and-stuff", user.Password),
+	}
+
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(requestDto)
+	require.Nil(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/", &body)
+	req.Header.Set("Content-Type", "application/json")
+	ctx, rw := generateTestEchoContextFromRequest(req)
+
+	service, _ := createTestUserService(t)
+
+	err = loginUserByEmail(ctx, service)
+	assert.Nil(t, err)
+
+	assert.Equal(t, http.StatusUnauthorized, rw.Code)
+	assert.Equal(t, "\"Invalid credentials\"\n", rw.Body.String())
+}
+
 func TestUnit_UserController_LogoutUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
 	req := httptest.NewRequest(http.MethodDelete, "/not-a-uuid", nil)
 

@@ -234,6 +234,70 @@ func TestUnit_UserController_UpdateUser_WhenUserHasWrongSyntax_ExpectBadRequest(
 	require.Equal(t, expectedBody, rw.Body.Bytes(), "Actual: %s", rw.Body.String())
 }
 
+func TestIT_UserController_UpdateUser(t *testing.T) {
+	conn := newTestConnection(t)
+	user := insertTestUser(t, conn)
+
+	requestDto := communication.UserDtoRequest{
+		Email:    fmt.Sprintf("my-other-email-%s", uuid.NewString()),
+		Password: "my-other-password",
+	}
+
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(requestDto)
+	require.Nil(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/", &body)
+	req.Header.Set("Content-Type", "application/json")
+	ctx, rw := generateTestEchoContextFromRequest(req)
+	ctx.SetParamNames("id")
+	ctx.SetParamValues(user.Id.String())
+
+	service, _ := createTestUserService(t)
+
+	err = updateUser(ctx, service)
+	assert.Nil(t, err)
+
+	var responseDto communication.UserDtoResponse
+	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
+	require.Nil(t, err)
+
+	assert.Equal(t, http.StatusOK, rw.Code)
+	assertEmailForUser(t, conn, user.Id, requestDto.Email)
+	assert.Equal(t, requestDto.Email, responseDto.Email)
+	assert.Equal(t, requestDto.Password, responseDto.Password)
+}
+
+func TestIT_UserController_UpdateUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+	// Non-existent id
+	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
+	conn := newTestConnection(t)
+
+	requestDto := communication.UserDtoRequest{
+		Email:    fmt.Sprintf("my-email-%s", uuid.NewString()),
+		Password: "my-new-password",
+	}
+
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(requestDto)
+	require.Nil(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/", &body)
+	req.Header.Set("Content-Type", "application/json")
+	ctx, rw := generateTestEchoContextFromRequest(req)
+	ctx.SetParamNames("id")
+	ctx.SetParamValues(id.String())
+
+	service, _ := createTestUserService(t)
+
+	err = updateUser(ctx, service)
+	assert.Nil(t, err)
+
+	assert.Equal(t, http.StatusNotFound, rw.Code)
+	assert.Equal(t, "\"No such user\"\n", rw.Body.String())
+	assertUserDoesNotExist(t, conn, id)
+}
+
 func TestUnit_UserController_DeleteUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
 	req := httptest.NewRequest(http.MethodDelete, "/not-a-uuid", nil)
 

@@ -55,7 +55,7 @@ func TestIT_UserController_Create(t *testing.T) {
 	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
 	require.Nil(t, err)
 
-	assert.Equal(t, http.StatusOK, rw.Code)
+	assert.Equal(t, http.StatusCreated, rw.Code)
 	assert.Equal(t, requestDto.Email, responseDto.Email)
 	assert.Equal(t, requestDto.Password, responseDto.Password)
 	assertUserExists(t, conn, responseDto.Id)
@@ -105,6 +105,32 @@ func TestIT_UserController_Create_WhenPasswordIsEmpty_ExpectFailure(t *testing.T
 
 	assert.Equal(t, http.StatusBadRequest, rw.Code)
 	assert.Equal(t, "\"Invalid password\"\n", rw.Body.String())
+}
+
+func TestIT_UserController_Create_WhenEmailAlreadyExists_ExpectFailure(t *testing.T) {
+	conn := newTestConnection(t)
+	user := insertTestUser(t, conn)
+
+	requestDto := communication.UserDtoRequest{
+		Email:    user.Email,
+		Password: "my-super-password",
+	}
+
+	var body bytes.Buffer
+	err := json.NewEncoder(&body).Encode(requestDto)
+	require.Nil(t, err)
+
+	req := httptest.NewRequest(http.MethodPost, "/", &body)
+	req.Header.Set("Content-Type", "application/json")
+	ctx, rw := generateTestEchoContextFromRequest(req)
+
+	service, _ := createTestUserService(t)
+
+	err = createUser(ctx, service)
+	assert.Nil(t, err)
+
+	assert.Equal(t, http.StatusConflict, rw.Code)
+	assert.Equal(t, "\"Email already in use\"\n", rw.Body.String())
 }
 
 func TestUnit_UserController_GetUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {

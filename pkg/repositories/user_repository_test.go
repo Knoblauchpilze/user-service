@@ -128,11 +128,11 @@ func TestIT_UserRepository_Update(t *testing.T) {
 
 func TestIT_UserRepository_Update_WhenNameAlreadyExists_ExpectFailure(t *testing.T) {
 	repo, conn := newTestUserRepository(t)
-
 	user := insertTestUser(t, conn)
+	toUpdate := insertTestUser(t, conn)
 
-	updatedUser := user
-	updatedUser.Email = "i-dont-care-about-@security.de"
+	updatedUser := toUpdate
+	updatedUser.Email = user.Email
 
 	_, err := repo.Update(context.Background(), updatedUser)
 

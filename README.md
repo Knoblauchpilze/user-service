@@ -11,7 +11,7 @@ This project uses the following technologies:
 
 [![codecov](https://codecov.io/gh/Knoblauchpilze/user-service/graph/badge.svg?token=94SJ008IPB)](https://codecov.io/gh/Knoblauchpilze/user-service)
 
-[![Build services](https://github.com/Knoblauchpilze/user-service/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/Knoblauchpilze/user-service/actions/workflows/build-and-deploy.yml)
+[![Build services](https://github.com/Knoblauchpilze/user-service/actions/workflows/build-and-push.yml/badge.svg)](https://github.com/Knoblauchpilze/user-service/actions/workflows/build-and-push.yml)
 
 [![Database migration tests](https://github.com/Knoblauchpilze/user-service/actions/workflows/database-migration-tests.yml/badge.svg)](https://github.com/Knoblauchpilze/user-service/actions/workflows/database-migration-tests.yml)
 

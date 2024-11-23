@@ -228,6 +228,8 @@ jobs:
       - name: Start docker image
         run: |
           docker run \
+            -d \
+            --name user-service-test \
             -e ENV_SERVER_PORT=$PORT \
             -e ENV_DATABASE_PASSWORD=$DATABASE_PASSWORD \
             totocorpsoftwareinc/user-service:fbf468c
@@ -240,3 +242,6 @@ jobs:
       - name: Test docker image
         run: |
           echo $(curl http://localhost:1234/v1/users)
+      - name: Stop docker image
+        run: |
+          docker stop user-service-test

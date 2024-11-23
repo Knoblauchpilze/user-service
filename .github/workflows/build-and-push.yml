@@ -270,6 +270,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: "Knoblauchpilze/ec2-deployment"
+          # https://stackoverflow.com/questions/64374179/how-to-push-to-another-repository-in-github-actions
           token: ${{ secrets.DEPLOYMENT_TOKEN }}
       - name: Update service tag
         run: |

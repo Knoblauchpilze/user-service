@@ -185,6 +185,9 @@ jobs:
           --health-retries 5
       user-service:
         image: totocorpsoftwareinc/user-service:fbf468c
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
         env:
           ENV_SERVER_PORT: 1234
           ENV_DATABASE_PASSWORD: manager_password

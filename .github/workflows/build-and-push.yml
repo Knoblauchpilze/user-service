@@ -225,7 +225,7 @@ jobs:
       - name: Pull latest docker image
         run: |
           docker pull totocorpsoftwareinc/user-service:fbf468c
-      - name: Start docker image
+      - name: Test docker image
         run: |
           docker run \
             -d \
@@ -233,15 +233,8 @@ jobs:
             -e ENV_SERVER_PORT=$PORT \
             -e ENV_DATABASE_PASSWORD=$DATABASE_PASSWORD \
             totocorpsoftwareinc/user-service:fbf468c
+          echo $(curl http://localhost:1234/v1/users)
+          docker stop user-service-test
         env:
           PORT: 1234
           DATABASE_PASSWORD: manager_password
-      - name: Check docker ps
-        run: |
-          docker ps -a
-      - name: Test docker image
-        run: |
-          echo $(curl http://localhost:1234/v1/users)
-      - name: Stop docker image
-        run: |
-          docker stop user-service-test

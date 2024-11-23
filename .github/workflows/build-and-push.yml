@@ -274,7 +274,7 @@ jobs:
           token: ${{ secrets.DEPLOYMENT_TOKEN }}
       - name: Update service tag
         run: |
-          echo "2fe5027" > ./build/user-service/version.txt
+          echo "${{ needs.extract-service-tag.outputs.version }}" > ./build/user-service/version.txt
       - name: "Commit changes"
         run: |
           git pull

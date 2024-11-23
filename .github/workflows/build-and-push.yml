@@ -224,7 +224,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Pull latest docker image
         run: |
-        docker pull totocodpsoftware/user-service:${{ needs.extract-service-tag.outputs.version }}
+          docker pull totocodpsoftware/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Start docker image
         run: |
           docker run \

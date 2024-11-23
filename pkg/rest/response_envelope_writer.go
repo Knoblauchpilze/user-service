@@ -46,7 +46,7 @@ func (erw *envelopeResponseWriter) WriteHeader(statusCode int) {
 	if statusCode < 200 || statusCode > 299 {
 		erw.response.Status = "ERROR"
 	} else {
-		erw.response.Status = "SUCCESS"
+		erw.response.Status = "SUCCESSx"
 	}
 	erw.writer.WriteHeader(statusCode)
 }

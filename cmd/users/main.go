@@ -3,44 +3,48 @@ package main
 import (
 	"context"
 	"os"
-	"time"
 
+	"github.com/KnoblauchPilze/user-service/cmd/users/internal"
 	"github.com/KnoblauchPilze/user-service/internal/controller"
 	"github.com/KnoblauchPilze/user-service/internal/service"
+	"github.com/KnoblauchPilze/user-service/pkg/config"
 	"github.com/KnoblauchPilze/user-service/pkg/db"
-	"github.com/KnoblauchPilze/user-service/pkg/db/postgresql"
 	"github.com/KnoblauchPilze/user-service/pkg/logger"
 	"github.com/KnoblauchPilze/user-service/pkg/repositories"
 	"github.com/KnoblauchPilze/user-service/pkg/server"
 )
 
+func determineConfigName() string {
+	if len(os.Args) < 2 {
+		return "users-prod.yml"
+	}
+
+	return os.Args[1]
+}
+
 func main() {
 	log := logger.New(logger.NewPrettyWriter(os.Stdout))
 
-	dbName := "my-db"
-	dbUser := "my-user"
-	dbPassword := "my-password"
-	dbConfig := postgresql.NewConfigForLocalhost(dbName, dbUser, dbPassword)
-	conn, err := db.New(context.Background(), dbConfig)
+	conf, err := config.Load(determineConfigName(), internal.DefaultConfig())
 	if err != nil {
 		log.Errorf("Failed to create db connection: %v", err)
 		os.Exit(1)
 	}
 
+	conn, err := db.New(context.Background(), conf.Database)
+	if err != nil {
+		log.Errorf("Failed to create db connection: %v", err)
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+
 	repos := repositories.Repositories{
 		User: repositories.NewUserRepository(conn),
 	}
 
-	apiKeyConfig := service.ApiKeyConfig{
-		Validity: 5 * time.Minute,
-	}
-	userService := service.NewUserService(apiKeyConfig, conn, repos)
+	userService := service.NewUserService(conf.ApiKey, conn, repos)
 
-	config := server.Config{
-		Port:            1234,
-		ShutdownTimeout: 2 * time.Second,
-	}
-	s := server.NewWithLogger(config, log)
+	s := server.NewWithLogger(conf.Server, log)
 
 	for _, route := range controller.UserEndpoints(userService) {
 		if err := s.AddRoute(route); err != nil {

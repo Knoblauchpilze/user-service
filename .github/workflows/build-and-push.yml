@@ -269,7 +269,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: "ec2-deployment"
+          repository: "Knoblauchpilze/ec2-deployment"
       - name: Update service tag
         run: |
           echo "${{ needs.extract-service-tag.outputs.version }}" > ./build/user-service/version.txt

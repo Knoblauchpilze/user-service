@@ -234,8 +234,6 @@ jobs:
         env:
           PORT: 1234
           DATABASE_PASSWORD: manager_password
-        ports:
-          - 1234:1234
       - name: Check docker ps
         run: |
           docker ps -a

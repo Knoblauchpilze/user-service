@@ -230,9 +230,10 @@ jobs:
       - name: Test docker image
         # https://superuser.com/questions/272265/getting-curl-to-output-http-status-code
         # https://stackoverflow.com/questions/24254064/how-to-get-curl-to-output-only-http-response-body-json-and-no-other-headers-et
+        # https://docs.github.com/en/actions/use-cases-and-examples/using-containerized-services/about-service-containers#running-jobs-on-the-runner-machine
         run: |
-          echo "status_code=$(curl -s -o /dev/null -w %{http_code} http://localhost:1234/v1/users)" >> $GITHUB_OUTPUT
-          echo "response_body=$(curl -s http://localhost:1234/v1/users)" >> $GITHUB_OUTPUT
+          echo "status_code=$(curl -s -o /dev/null -w %{http_code} localhost:1234/v1/users)" >> $GITHUB_OUTPUT
+          echo "response_body=$(curl -s localhost:1234/v1/users)" >> $GITHUB_OUTPUT
         id: test-results
       - name: Print test results
         run: |

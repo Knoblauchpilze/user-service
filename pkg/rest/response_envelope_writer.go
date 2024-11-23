@@ -14,7 +14,7 @@ func NewResponseEnvelopeWriter(w http.ResponseWriter, requestId string) *envelop
 	return &envelopeResponseWriter{
 		response: responseEnvelope{
 			RequestId: requestId,
-			Status:    "SUCCESSx",
+			Status:    "SUCCESS",
 		},
 		writer: w,
 	}
@@ -46,7 +46,7 @@ func (erw *envelopeResponseWriter) WriteHeader(statusCode int) {
 	if statusCode < 200 || statusCode > 299 {
 		erw.response.Status = "ERROR"
 	} else {
-		erw.response.Status = "SUCCESSx"
+		erw.response.Status = "SUCCESS"
 	}
 	erw.writer.WriteHeader(statusCode)
 }

@@ -247,3 +247,15 @@ jobs:
         run: |
           echo ${{ steps.test-results.outputs.status_code }}
           echo ${{ steps.test-results.outputs.response }}
+      - name: Verify status code
+        run: |
+          if [[ ${{ steps.test-results.outputs.status_code != '200' }} ]]; then
+            echo "::error ::Expected http status code to be 200 but it was ${{ steps.test-results.outputs.status_code }}!"
+            exit 1
+          fi
+      - name: Verify response body
+        # https://stackoverflow.com/questions/58862864/github-actions-ci-conditional-regex
+        run: |
+          if [[ ${{ steps.test-results.outputs.response }} ~= ^requestId:[0-9a-f-]+ status:SUCCESS details:\[\]$ }} ]]; then
+          echo "::error ::Expected http status code to be 200 but it was ${{ steps.test-results.outputs.status_code }}!"
+          exit 1

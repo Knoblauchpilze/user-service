@@ -39,14 +39,30 @@ func main() {
 	defer conn.Close(context.Background())
 
 	repos := repositories.Repositories{
-		User: repositories.NewUserRepository(conn),
+		User:   repositories.NewUserRepository(conn),
+		ApiKey: repositories.NewApiKeyRepository(conn),
 	}
 
 	userService := service.NewUserService(conf.ApiKey, conn, repos)
+	authService := service.NewAuthService(repos)
 
 	s := server.NewWithLogger(conf.Server, log)
 
 	for _, route := range controller.UserEndpoints(userService) {
+		if err := s.AddRoute(route); err != nil {
+			log.Errorf("Failed to register route %v: %v", route.Path(), err)
+			os.Exit(1)
+		}
+	}
+
+	for _, route := range controller.HealthCheckEndpoints(conn) {
+		if err := s.AddRoute(route); err != nil {
+			log.Errorf("Failed to register route %v: %v", route.Path(), err)
+			os.Exit(1)
+		}
+	}
+
+	for _, route := range controller.AuthEndpoints(authService) {
 		if err := s.AddRoute(route); err != nil {
 			log.Errorf("Failed to register route %v: %v", route.Path(), err)
 			os.Exit(1)

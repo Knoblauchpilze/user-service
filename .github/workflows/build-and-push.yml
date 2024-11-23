@@ -257,5 +257,6 @@ jobs:
         # https://stackoverflow.com/questions/58862864/github-actions-ci-conditional-regex
         run: |
           if [[ '${{ steps.test-results.outputs.response_body }}' =~ ^\{\"requestId\":\"[0-9a-f-]+\",\"status\":\"SUCCESS\",\"details\":\[\]\}$ ]]; then
-          echo "::error ::Expected http response to match expected syntax but it did not: ${{ steps.test-results.outputs.response_body }}!"
-          exit 1
+            echo "::error ::Expected http response to match expected syntax but it did not: ${{ steps.test-results.outputs.response_body }}!"
+            exit 1
+          fi

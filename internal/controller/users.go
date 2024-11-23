@@ -99,7 +99,7 @@ func listUsers(c echo.Context, s service.UserService) error {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, out)
+	return c.JSON(http.StatusAccepted, out)
 }
 
 func updateUser(c echo.Context, s service.UserService) error {

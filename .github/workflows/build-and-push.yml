@@ -226,6 +226,7 @@ jobs:
         run: |
           docker pull totocorpsoftwareinc/user-service:fbf468c
       - name: Test docker image
+        # https://superuser.com/questions/272265/getting-curl-to-output-http-status-code
         run: |
           docker run \
             -d \
@@ -233,8 +234,14 @@ jobs:
             -e ENV_SERVER_PORT=$PORT \
             -e ENV_DATABASE_PASSWORD=$DATABASE_PASSWORD \
             totocorpsoftwareinc/user-service:fbf468c
-          echo $(curl http://localhost:1234/v1/users)
+          echo "status_code=$(curl -s -o /dev/null -w %{http_code} http://127.0.0.1:1234/v1/users)" >> $GITHUB_OUTPUT
+          echo "response=$(curl -s http://127.0.0.1:1234/v1/users)" >> $GITHUB_OUTPUT
           docker stop user-service-test
+        id: test-results
         env:
           PORT: 1234
           DATABASE_PASSWORD: manager_password
+      - name: Verify docker image
+        run: |
+          echo ${{ steps.test-results.outputs.status_code }}
+          echo ${{ steps.test-results.outputs.response }}

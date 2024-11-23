@@ -14,7 +14,7 @@ func NewResponseEnvelopeWriter(w http.ResponseWriter, requestId string) *envelop
 	return &envelopeResponseWriter{
 		response: responseEnvelope{
 			RequestId: requestId,
-			Status:    "SUCCESS",
+			Status:    "SUCCESSx",
 		},
 		writer: w,
 	}

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/KnoblauchPilze/user-service/pkg/logger"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

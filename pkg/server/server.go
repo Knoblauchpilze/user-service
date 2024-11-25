@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
-	"github.com/KnoblauchPilze/user-service/pkg/logger"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/logger"
 	om "github.com/KnoblauchPilze/user-service/pkg/middleware"
 	"github.com/KnoblauchPilze/user-service/pkg/rest"
 	"github.com/labstack/echo/v4"

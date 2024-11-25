@@ -6,12 +6,12 @@ import (
 
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/config"
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/logger"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/server"
 	"github.com/KnoblauchPilze/user-service/cmd/users/internal"
 	"github.com/KnoblauchPilze/user-service/internal/controller"
 	"github.com/KnoblauchPilze/user-service/internal/service"
 	"github.com/KnoblauchPilze/user-service/pkg/db"
 	"github.com/KnoblauchPilze/user-service/pkg/repositories"
-	"github.com/KnoblauchPilze/user-service/pkg/server"
 )
 
 func determineConfigName() string {

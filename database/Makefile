@@ -1,10 +1,11 @@
 # Default variables
-DB_PATH ?= test
-DB_NAME ?= test_db
+DB_PATH ?= users
 DB_HOST ?= localhost
 DB_PORT ?= 5432
-DB_USER ?= test_user
-DB_PASSWORD ?= test_password
+DB_NAME ?= db_user_service
+DB_USER ?= user_service_admin
+DB_PASSWORD ?= "comes-from-the-environment"
+
 MIGRATION_STEPS ?= 1
 
 URL_ENCODED_PASSWORD=$(shell urlencode '${DB_PASSWORD}')

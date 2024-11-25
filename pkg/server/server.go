@@ -11,8 +11,8 @@ import (
 
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/logger"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/rest"
 	om "github.com/KnoblauchPilze/user-service/pkg/middleware"
-	"github.com/KnoblauchPilze/user-service/pkg/rest"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )

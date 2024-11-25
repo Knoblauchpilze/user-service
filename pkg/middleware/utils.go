@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
-	"github.com/KnoblauchPilze/user-service/pkg/logger"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/logger"
 	"github.com/labstack/echo/v4"
 )
 

@@ -5,7 +5,7 @@ go 1.23.2
 require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/labstack/gommon v0.4.2
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
@@ -36,6 +36,7 @@ require (
 )
 
 require (
+	github.com/KnoblauchPilze/backend-toolkit v0.1.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )

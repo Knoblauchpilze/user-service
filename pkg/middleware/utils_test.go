@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 

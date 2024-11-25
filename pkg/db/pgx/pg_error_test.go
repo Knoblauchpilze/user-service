@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
 	jpgx "github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 )

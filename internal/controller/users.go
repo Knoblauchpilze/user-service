@@ -3,11 +3,11 @@ package controller
 import (
 	"net/http"
 
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
 	"github.com/KnoblauchPilze/user-service/internal/service"
 	"github.com/KnoblauchPilze/user-service/pkg/communication"
 	"github.com/KnoblauchPilze/user-service/pkg/db"
 	"github.com/KnoblauchPilze/user-service/pkg/db/pgx"
-	"github.com/KnoblauchPilze/user-service/pkg/errors"
 	"github.com/KnoblauchPilze/user-service/pkg/repositories"
 	"github.com/KnoblauchPilze/user-service/pkg/rest"
 	"github.com/google/uuid"

@@ -3,7 +3,7 @@ package pgx
 import (
 	"strings"
 
-	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 

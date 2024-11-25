@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/KnoblauchPilze/user-service/pkg/errors"
+	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
 	"github.com/KnoblauchPilze/user-service/pkg/logger"
 	"github.com/labstack/echo/v4"
 )

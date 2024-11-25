@@ -1,6 +1,6 @@
 package server
 
-import "github.com/KnoblauchPilze/user-service/pkg/errors"
+import "github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
 
 const (
 	UnsupportedProtocol errors.ErrorCode = 300

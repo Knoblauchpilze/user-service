@@ -2,16 +2,14 @@ module github.com/KnoblauchPilze/user-service
 
 go 1.23.2
 
-require (
-	github.com/jackc/pgx/v5 v5.7.1
-	github.com/labstack/gommon v0.4.2
-	github.com/stretchr/testify v1.10.0
-)
+require github.com/stretchr/testify v1.10.0
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jackc/pgx/v5 v5.7.1 // indirect
+	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -45,8 +43,8 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
-	github.com/rs/zerolog v1.33.0
-	github.com/spf13/viper v1.19.0
+	github.com/rs/zerolog v1.33.0 // indirect
+	github.com/spf13/viper v1.19.0 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/text v0.19.0 // indirect

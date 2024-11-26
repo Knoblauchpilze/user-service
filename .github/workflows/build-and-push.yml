@@ -3,6 +3,7 @@ name: Build services
 on:
   push:
     paths:
+      - "go.mod"
       - ".github/workflows/**"
       - "database/**"
       - "pkg/**"

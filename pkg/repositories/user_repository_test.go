@@ -61,7 +61,7 @@ func TestIT_UserRepository_Get(t *testing.T) {
 	actual, err := repo.Get(context.Background(), user.Id)
 	assert.Nil(t, err)
 
-	assert.True(t, eassert.EqualsIgnoringFields(actual, user), "Actual: %v, expected: %v", actual, user)
+	assert.True(t, eassert.EqualsIgnoringFields(actual, user))
 }
 
 func TestIT_UserRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
@@ -80,7 +80,7 @@ func TestIT_UserRepository_GetByEmail(t *testing.T) {
 	actual, err := repo.GetByEmail(context.Background(), user.Email)
 	assert.Nil(t, err)
 
-	assert.True(t, eassert.EqualsIgnoringFields(actual, user), "Actual: %v, expected: %v", actual, user)
+	assert.True(t, eassert.EqualsIgnoringFields(actual, user))
 }
 
 func TestIT_UserRepository_GetByEmail_WhenNotFound_ExpectFailure(t *testing.T) {

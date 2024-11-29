@@ -34,7 +34,7 @@ require (
 )
 
 require (
-	github.com/KnoblauchPilze/backend-toolkit v0.1.0
+	github.com/KnoblauchPilze/backend-toolkit v0.2.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect

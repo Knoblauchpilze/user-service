@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"time"
 
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/db"
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
@@ -30,10 +31,12 @@ func NewUserRepository(conn db.Connection) UserRepository {
 
 const createUserSqlTemplate = `
 INSERT INTO api_user (id, email, password, created_at)
-	VALUES($1, $2, $3, $4)`
+	VALUES($1, $2, $3, $4)
+	RETURNING updated_at`
 
 func (r *userRepositoryImpl) Create(ctx context.Context, user persistence.User) (persistence.User, error) {
-	_, err := r.conn.Exec(ctx, createUserSqlTemplate, user.Id, user.Email, user.Password, user.CreatedAt)
+	updatedAt, err := db.QueryOne[time.Time](ctx, r.conn, createUserSqlTemplate, user.Id, user.Email, user.Password, user.CreatedAt)
+	user.UpdatedAt = updatedAt
 	return user, err
 }
 

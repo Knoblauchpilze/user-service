@@ -8,6 +8,7 @@ import (
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/db"
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/db/pgx"
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
+	eassert "github.com/KnoblauchPilze/easy-assert/assert"
 	"github.com/KnoblauchPilze/user-service/pkg/persistence"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +30,8 @@ func TestIT_UserRepository_Create(t *testing.T) {
 	actual, err := repo.Create(context.Background(), user)
 	assert.Nil(t, err)
 
-	assert.Equal(t, user, actual)
+	assert.True(t, eassert.EqualsIgnoringFields(actual, user, "UpdatedAt"))
+	assert.True(t, actual.UpdatedAt.After(actual.CreatedAt))
 	assertUserExists(t, conn, user.Id)
 }
 
@@ -59,10 +61,7 @@ func TestIT_UserRepository_Get(t *testing.T) {
 	actual, err := repo.Get(context.Background(), user.Id)
 	assert.Nil(t, err)
 
-	assert.Equal(t, user.Id, actual.Id)
-	assert.Equal(t, user.Email, actual.Email)
-	assert.Equal(t, user.Password, actual.Password)
-	assert.Equal(t, 0, actual.Version)
+	assert.True(t, eassert.EqualsIgnoringFields(actual, user))
 }
 
 func TestIT_UserRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
@@ -81,10 +80,7 @@ func TestIT_UserRepository_GetByEmail(t *testing.T) {
 	actual, err := repo.GetByEmail(context.Background(), user.Email)
 	assert.Nil(t, err)
 
-	assert.Equal(t, user.Id, actual.Id)
-	assert.Equal(t, user.Email, actual.Email)
-	assert.Equal(t, user.Password, actual.Password)
-	assert.Equal(t, 0, actual.Version)
+	assert.True(t, eassert.EqualsIgnoringFields(actual, user))
 }
 
 func TestIT_UserRepository_GetByEmail_WhenNotFound_ExpectFailure(t *testing.T) {

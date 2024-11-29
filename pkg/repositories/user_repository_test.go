@@ -115,11 +115,15 @@ func TestIT_UserRepository_Update(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	assert.Equal(t, user.Id, actual.Id)
-	assert.Equal(t, user.Email, actual.Email)
-	assert.Equal(t, updatedUser.Password, actual.Password)
-	assert.Equal(t, user.CreatedAt, actual.CreatedAt)
-	assert.Equal(t, user.Version+1, actual.Version)
+	expected := persistence.User{
+		Id:        user.Id,
+		Email:     updatedUser.Email,
+		Password:  "my-new-password",
+		CreatedAt: user.CreatedAt,
+		Version:   user.Version + 1,
+	}
+	assert.True(t, eassert.EqualsIgnoringFields(actual, expected, "UpdatedAt"))
+	assert.True(t, actual.UpdatedAt.After(user.UpdatedAt))
 }
 
 func TestIT_UserRepository_Update_WhenNameAlreadyExists_ExpectFailure(t *testing.T) {

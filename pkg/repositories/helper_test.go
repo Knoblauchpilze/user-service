@@ -41,8 +41,10 @@ func insertTestUser(t *testing.T, conn db.Connection) persistence.User {
 		Password:  "my-password",
 		CreatedAt: someTime,
 	}
-	_, err := conn.Exec(context.Background(), "INSERT INTO api_user (id, email, password, created_at) VALUES ($1, $2, $3, $4)", user.Id, user.Email, user.Password, user.CreatedAt)
+	updatedAt, err := db.QueryOne[time.Time](context.Background(), conn, "INSERT INTO api_user (id, email, password, created_at) VALUES ($1, $2, $3, $4) RETURNING updated_at", user.Id, user.Email, user.Password, user.CreatedAt)
 	require.Nil(t, err)
+
+	user.UpdatedAt = updatedAt
 
 	return user
 }

@@ -83,21 +83,23 @@ SET
 	version = $3
 WHERE
 	id = $4
-	AND version = $5`
+	AND version = $5
+RETURNING
+	updated_at`
 
 func (r *userRepositoryImpl) Update(ctx context.Context, user persistence.User) (persistence.User, error) {
 	version := user.Version + 1
-	affected, err := r.conn.Exec(ctx, updateUserSqlTemplate, user.Email, user.Password, version, user.Id, user.Version)
+
+	updatedAt, err := db.QueryOne[time.Time](ctx, r.conn, updateUserSqlTemplate, user.Email, user.Password, version, user.Id, user.Version)
 	if err != nil {
+		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
+			return user, errors.NewCode(OptimisticLockException)
+		}
 		return user, err
-	}
-	if affected == 0 {
-		return user, errors.NewCode(OptimisticLockException)
-	} else if affected != 1 {
-		return user, errors.NewCode(MoreThanOneMatchingEntry)
 	}
 
 	user.Version = version
+	user.UpdatedAt = updatedAt
 
 	return user, nil
 }

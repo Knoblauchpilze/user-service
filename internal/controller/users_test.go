@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/KnoblauchPilze/backend-toolkit/pkg/db"
+	eassert "github.com/KnoblauchPilze/easy-assert/assert"
 	"github.com/KnoblauchPilze/user-service/internal/service"
 	"github.com/KnoblauchPilze/user-service/pkg/communication"
 	"github.com/KnoblauchPilze/user-service/pkg/repositories"
@@ -165,7 +166,7 @@ func TestIT_UserController_GetUser(t *testing.T) {
 	assert.Equal(t, user.Email, responseDto.Email)
 	assert.Equal(t, user.Password, responseDto.Password)
 	safetyMargin := 1 * time.Second
-	assert.True(t, areTimeCloserThan(user.CreatedAt, responseDto.CreatedAt, safetyMargin))
+	assert.True(t, eassert.AreTimeCloserThan(user.CreatedAt, responseDto.CreatedAt, safetyMargin))
 }
 
 func TestIT_UserController_GetUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
@@ -402,7 +403,7 @@ func TestIT_UserController_LoginUserByEmail(t *testing.T) {
 	assertApiKeyExistsByKey(t, conn, responseDto.Key)
 	expectedApproximateValidity := time.Now().Add(1 * time.Hour)
 	safetyMargin := 5 * time.Second
-	assert.True(t, areTimeCloserThan(responseDto.ValidUntil, expectedApproximateValidity, safetyMargin))
+	assert.True(t, eassert.AreTimeCloserThan(responseDto.ValidUntil, expectedApproximateValidity, safetyMargin))
 }
 
 func TestIT_UserController_LoginUserByEmail_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
@@ -532,9 +533,4 @@ func createTestUserService(t *testing.T) (service.UserService, db.Connection) {
 	}
 
 	return service.NewUserService(config, conn, repos), conn
-}
-
-func areTimeCloserThan(t1 time.Time, t2 time.Time, distance time.Duration) bool {
-	diff := t1.Sub(t2).Abs()
-	return diff <= distance
 }

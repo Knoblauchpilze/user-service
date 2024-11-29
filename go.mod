@@ -3,7 +3,7 @@ module github.com/KnoblauchPilze/user-service
 go 1.23.2
 
 require (
-	github.com/KnoblauchPilze/easy-assert v0.2.0
+	github.com/KnoblauchPilze/easy-assert v0.3.0
 	github.com/stretchr/testify v1.10.0
 )
 

@@ -169,6 +169,22 @@ func TestIT_UserRepository_Update_BumpsUpdatedAt(t *testing.T) {
 	assert.True(t, updatedUserFromDb.UpdatedAt.After(user.UpdatedAt))
 }
 
+func TestIT_UserRepository_Update_BumpsVersion(t *testing.T) {
+	repo, conn := newTestUserRepository(t)
+
+	user := insertTestUser(t, conn)
+
+	updatedUser := user
+	updatedUser.Password = "my-new-password"
+
+	_, err := repo.Update(context.Background(), updatedUser)
+	assert.Nil(t, err)
+
+	updatedUserFromDb, err := repo.Get(context.Background(), user.Id)
+	assert.Nil(t, err)
+	assert.Equal(t, user.Version+1, updatedUserFromDb.Version)
+}
+
 func TestIT_UserRepository_Delete(t *testing.T) {
 	repo, conn, tx := newTestUserRepositoryAndTransaction(t)
 

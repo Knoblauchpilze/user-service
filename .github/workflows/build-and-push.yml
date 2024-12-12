@@ -144,7 +144,7 @@ jobs:
           context: .
           file: ./build/user-service/Dockerfile
           build-args: GIT_COMMIT_HASH=${{ needs.extract-service-tag.outputs.version }}
-          push: ${{ github.actor != 'dependabot[bot]' }}
+          push: ${{ github.actor == 'dependabot[bot]' }}
           tags: totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
 
   e2e-tests:

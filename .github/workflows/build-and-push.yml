@@ -47,6 +47,7 @@ jobs:
       - name: Run tests with coverage
         run: go test -run='^TestUnit_.*' ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
@@ -107,6 +108,7 @@ jobs:
       - name: Run tests with coverage
         run: go test -run='^TestIT_.*' ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
@@ -132,6 +134,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Login to Docker Hub
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -209,11 +212,13 @@ jobs:
         env:
           PGPASSWORD: admin_password
       - name: Login to Docker Hub
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Pull docker image from registry
+        if: ${{ github.actor != 'dependabot[bot]' }}
         run: |
           docker pull totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Load docker image from artifact

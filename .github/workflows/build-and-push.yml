@@ -145,7 +145,7 @@ jobs:
           context: .
           file: ./build/user-service/Dockerfile
           build-args: GIT_COMMIT_HASH=${{ needs.extract-service-tag.outputs.version }}
-          push: true
+          push: ${{ github.actor == 'dependabot[bot]' }}
           tags: totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Save image as artifact
         # TODO: Invert this if

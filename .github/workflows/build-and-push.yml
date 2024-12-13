@@ -47,7 +47,6 @@ jobs:
       - name: Run tests with coverage
         run: go test -run='^TestUnit_.*' ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov
-        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
@@ -108,7 +107,6 @@ jobs:
       - name: Run tests with coverage
         run: go test -run='^TestIT_.*' ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
       - name: Upload coverage to Codecov
-        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
@@ -133,7 +131,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Login to Docker Hub
-        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -145,7 +142,7 @@ jobs:
           context: .
           file: ./build/user-service/Dockerfile
           build-args: GIT_COMMIT_HASH=${{ needs.extract-service-tag.outputs.version }}
-          push: ${{ github.actor != 'dependabot[bot]' }}
+          push: true
           tags: totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Save image as artifact
         if: ${{ github.actor == 'dependabot[bot]' }}
@@ -211,13 +208,11 @@ jobs:
         env:
           PGPASSWORD: admin_password
       - name: Login to Docker Hub
-        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Pull docker image from registry
-        if: ${{ github.actor != 'dependabot[bot]' }}
         run: |
           docker pull totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Load docker image from artifact
@@ -238,7 +233,7 @@ jobs:
           docker run \
             -d \
             --name user-service-test \
-            -e ENV_SERVER_PORT=$PORT \
+            -e ENV_SERVER_PORT=1234 \
             -e ENV_DATABASE_PASSWORD=$DATABASE_PASSWORD \
             -p 1234:1234 \
             totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
@@ -247,7 +242,6 @@ jobs:
           docker stop user-service-test
         id: test-results
         env:
-          PORT: 1234
           DATABASE_PASSWORD: manager_password
       - name: Print test results
         run: |

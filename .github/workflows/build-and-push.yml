@@ -232,7 +232,7 @@ jobs:
           path: /tmp
       - name: Load image from artifact
         run: |
-          docker load --input user-service-docker-image/user-service.tar
+          docker load --input /tmp/user-service.tar
       - name: Test docker image
         # https://superuser.com/questions/272265/getting-curl-to-output-http-status-code
         # https://stackoverflow.com/questions/24254064/how-to-get-curl-to-output-only-http-response-body-json-and-no-other-headers-et

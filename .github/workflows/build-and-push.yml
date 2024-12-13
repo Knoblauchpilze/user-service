@@ -146,22 +146,19 @@ jobs:
           context: .
           file: ./build/user-service/Dockerfile
           build-args: GIT_COMMIT_HASH=${{ needs.extract-service-tag.outputs.version }}
-          push: true
+          push: ${{ github.actor == 'dependabot[bot]' }}
           tags: totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
-      - name: Build and push to artifact
+      - name: Save image as artifact
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./build/user-service/Dockerfile
-          build-args: GIT_COMMIT_HASH=${{ needs.extract-service-tag.outputs.version }}
-          tags: totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
-          outputs: type=docker,dest=/tmp/user-service:${{ needs.extract-service-tag.outputs.version }}.tar
+        # https://stackoverflow.com/questions/23935141/how-to-copy-docker-images-from-one-host-to-another-without-using-a-repository
+        run: |
+          docker save -o /tmp/user-service.tar totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Upload docker image artifact
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: actions/upload-artifact@v4
         with:
-          name: user-service:${{ needs.extract-service-tag.outputs.version }}
-          path: /tmp/user-service:${{ needs.extract-service-tag.outputs.version }}.tar
+          name: user-service-docker-image
+          path: /tmp/user-service.tar
 
   e2e-tests:
     runs-on: ubuntu-latest
@@ -214,8 +211,6 @@ jobs:
         working-directory: ./database
         env:
           PGPASSWORD: admin_password
-      - name: Set up docker buildx
-        uses: docker/setup-buildx-action@v3
       - name: Login to Docker Hub
         if: ${{ github.actor == 'dependabot[bot]' }}
         uses: docker/login-action@v3
@@ -226,15 +221,15 @@ jobs:
         if: ${{ github.actor == 'dependabot[bot]' }}
         run: |
           docker pull totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
-      - name: Download artifact
+      - name: Load docker image from artifact
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: actions/download-artifact@v4
         with:
-          name: user-service:${{ needs.extract-service-tag.outputs.version }}
+          name: user-service-docker-image
           path: /tmp
       - name: Load image from artifact
         run: |
-          docker load --input /tmp/user-service:${{ needs.extract-service-tag.outputs.version }}.tar
+          docker load --input user-service-docker-image/user-service.tar
       - name: Test docker image
         # https://superuser.com/questions/272265/getting-curl-to-output-http-status-code
         # https://stackoverflow.com/questions/24254064/how-to-get-curl-to-output-only-http-response-body-json-and-no-other-headers-et

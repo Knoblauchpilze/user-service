@@ -140,7 +140,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       # https://docs.github.com/en/actions/publishing-packages/publishing-docker-images#publishing-images-to-docker-hub
       - name: Build and push to docker
-        if: ${{ github.actor == 'dependabot[bot]' }}
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -149,11 +148,13 @@ jobs:
           push: ${{ github.actor == 'dependabot[bot]' }}
           tags: totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Save image as artifact
+        # TODO: Invert this if
         if: ${{ github.actor != 'dependabot[bot]' }}
         # https://stackoverflow.com/questions/23935141/how-to-copy-docker-images-from-one-host-to-another-without-using-a-repository
         run: |
           docker save -o /tmp/user-service.tar totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Upload docker image artifact
+        # TODO: Invert this if
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: actions/upload-artifact@v4
         with:
@@ -212,16 +213,18 @@ jobs:
         env:
           PGPASSWORD: admin_password
       - name: Login to Docker Hub
-        if: ${{ github.actor == 'dependabot[bot]' }}
+        if: ${{ github.actor != 'dependabot[bot]' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Pull docker image from registry
+        # TODO: Invert this if
         if: ${{ github.actor == 'dependabot[bot]' }}
         run: |
           docker pull totocorpsoftwareinc/user-service:${{ needs.extract-service-tag.outputs.version }}
       - name: Load docker image from artifact
+        # TODO: Invert this if
         if: ${{ github.actor != 'dependabot[bot]' }}
         uses: actions/download-artifact@v4
         with:

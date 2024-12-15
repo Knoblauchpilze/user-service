@@ -116,10 +116,14 @@ In a microservice architecture, it is common to group all services behind a sing
 
 ![API gateway diagram](resources/api-gateway-diagram.png)
 
-This architecture routes all incoming traffic to a single component which main goal is to determine:
+This architecture routes all incoming traffic to a single component which main goal is to dispatch the requests to the services able to handle them.
+
+Additionally, it is not rare to include the authentication in this component as well. The idea is that instead of having this handled for each and every microservice (with potentially a lot of duplicated code), this process can live in a single place where we can ensure that it's properly done.
+
+The purpose of the API gateway becomes to answer the following question:
 
 ```
-Is this request allowed to do what it is requesting to do?
+Is this request allowed to do what it is requesting to do and who should handle it?
 ```
 
 The typical workflow is to:
@@ -135,7 +139,11 @@ The `user-service` as defined in this repository helps with steps 1 and 2.
 
 Traefik has a [forwardAuth](https://doc.traefik.io/traefik/middlewares/http/forwardauth) middleware which allows (as its name suggests) to forward any request it receives to an external authentication server. Based on the response of this server it either denies or forwars the request.
 
-As all requests are routed towards this endpoint by traefik before they reach the target service, we can guarantees an efficient filtering and only allow authenticated users to access our cluster.
+As all requests are routed towards this endpoint by traefik before they reach the target service, we can guarantees an efficient filtering and only allow authenticated users to access our cluster. This is shown in the picture below:
+
+![Forward authentication diagram](resources/forward-auth-diagram.png)
+
+In this diagram the `user-service` is the `AuthServer`.
 
 ## How does this service come into play?
 

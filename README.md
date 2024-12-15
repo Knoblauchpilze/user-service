@@ -15,7 +15,17 @@ This project uses the following technologies:
 
 [![Database migration tests](https://github.com/Knoblauchpilze/user-service/actions/workflows/database-migration-tests.yml/badge.svg)](https://github.com/Knoblauchpilze/user-service/actions/workflows/database-migration-tests.yml)
 
+# What is this service about?
+
+One of the most basic concern of any web application or service nowadays is user management. Generally, this means the code needed to keep track of who is using a service, how they can log into the service and which permissions they have.
+
+Whether you want to implement a game or have an e-commerce website or build a platform providing some service, it is very likely that you'll have to manage users (**your** users).
+
+This repository defines a service to help make this simple.
+
 # Installation
+
+## Tools to install on your system
 
 The tools described below are directly used by the project. It is mandatory to install them in order to build the project locally.
 
@@ -25,6 +35,8 @@ See the following links:
 - [golang migrate](https://github.com/golang-migrate/migrate/blob/master/cmd/migrate/README.md): following the instructions there should be enough.
 - [postgresql](https://www.postgresql.org/) which can be taken from the packages with `sudo apt-get install postgresql-14` for example.
 
+## Cloning the repository
+
 We also assume that this repository is cloned locally and available to use. To achieve this, just use the following command:
 
 ```bash
@@ -33,27 +45,53 @@ git clone git@github.com:Knoblauchpilze/user-service.git
 
 ## Secrets in the CI
 
-The CI workflows define several secrets that are expected to be created for the repository when cloned/forked/used. Each secret should be self-explanatory based on its name. Most of them require to setup an account on one or the other service mentioned in this README.
+The CI workflows define several secrets that are expected to be created for the repository when cloned/forked/used. Each secret should be self-explanatory based on its name. Most of them require to setup an account on one or the other service mentioned in the [tools](#tools-to-install-on-your-system) section.
 
-# How does sign-up/login/logout work?
+## Deploying this service
 
-## General design
+This service is meant to work nicely in a microservice architecture. Notably, it is used in the [galactic-sovereign](https://github.com/Knoblauchpilze/galactic-sovereign) project as a base for user management.
 
-The base of our authentication system is the `user-service`. This service describes what a user is and which ones are registered in our system.
+In order to make this service play nicely with your microservice architecture, you can find an example on how to deploy it in the [ec2-deployment](https://github.com/Knoblauchpilze/ec2-deployment) project.
 
-Each user is attached a set of credentials, along with some permissions and limits. This information can be returned by the `user-service` through a `auth` endpoint.
+The `ec2-deployment` repository defines a docker compose architecture for multiple services (including this one) to handle users and authentication for the `Galactic Sovereign` game.
 
-Traefik has a [forwardAuth](https://doc.traefik.io/traefik/middlewares/http/forwardauth) middleware which allows (as its name suggests) to forward any request it receives to an external authentication server. Based on the response of this server it either denies or forwars the request.
+The CI of this project builds a docker image that can be used as you see fit.
 
-We leveraged this principle to hook the `user-service` with this middleware so that we can control the access to the API to only authenticated users.
+# General architecture
+
+## System architecture
+
+The `user-service` is a Go service which handles users and store them in a `postgres` database. It defines various endpoints to perform the common operation on users:
+
+- create a new user
+- update it (in case of credentials change for example)
+- delete it
+- login and logout
+- authentication
+
+This service defines a classic layout with controllers using services, themselves using repositories to interact with the database. The interaction with the database is not using any ORM system (like [GORM](https://gorm.io/)) but just plain repositories and SQL queries defined in this repository. Considering that the system is still relatively simple this seemed to be the right choice.
+
+## Typical user workflow
+
+This service relies on the following base use-case:
+
+- a user is created with a set of credentials
+- this user can log into the system by providing the right credentials
+- once logged in, the user is provided a temporary API key which can be used to access secured resources
+- the user can logout of the system, or they get automatically logged out after a pre-configured period of time
+- the user can be deleted in case it is no longer needed
+
+Each of these actions are typically handled by a dedicated handler in the [controllers](internal/controller) package.
 
 ## The session concept
 
-In order to allow users to access information about the service, we provide a session mechanism. It is quite a wide topic and we gathered a few resources on whether this is a RESTful approach or not in the dedicated [PR #7](https://github.com/KnoblauchPilze/galactic-sovereign/pull/7).
+In order to allow users to be authenticated before granting access to a service, the `user-service` provides a session mechanism. It is quite a wide topic and you can find more resources on the research that went into producing the strategy used in this repository (including whether this is a RESTful approach or not) in a dedicated [PR #7](https://github.com/KnoblauchPilze/galactic-sovereign/pull/7) (this service was initially part of the `galactic-sovereign` monorepo).
 
-Upon calling the `POST /v1/users/sessions` route, the user will be able to obtain a token valid (see [API keys](#api-keys)) for a certain period of time and which can be used to access other endpoints in the cluster. This endpoint, along with the `POST /v1/users` endpoint to create a new user, are the only one which can be called unauthenticated.
+Upon calling the `POST /v1/users/sessions` route (see [auth](internal/controller/auth.go) controller), the user will be able to obtain a token (see [API keys](#api-keys)), valid for a certain period of time.
 
-The session token is only valid for a certain amount of time and can be revoked early by calling `DELETE /v1/users/sessions/{user-id}`.
+Providing this token can be used as an authentication mechanism to verify that the user is who they pretend they are.
+
+The session token is only valid for a certain amount of time and can be revoked early by calling `DELETE /v1/users/sessions/{user-id}`. Its validity duration cannot be configured at the moment and is a property of the `user-service`: this seems better from a security posture.
 
 ## API keys
 
@@ -66,7 +104,48 @@ The authentication endpoint is a corner stone of the strategy: this takes any ht
 - if there's no such header the request is denied.
 - if there's one but the key is invalid (either expired or unknown) the request is denied.
 
-As all requests are routed towards this endpoint by traefik before they reach the target service, we can guarantees an efficient filtering and only allow authorized users to access our cluster.
+Additionally, this endpoint should return any permissions that are provided to the user in the response: generally this could be a list of allowed endpoints, or the group of the user (typically an admin or a regular user).
+
+# How to use this service to authenticate requests in a microservice cluster?
+
+⚠️ The rest of this section will be using [traefik](https://traefik.io/traefik/) as an example for an API gateway. There are many other solutions out there but the concepts should be similar.
+
+## Generalities
+
+In a microservice architecture, it is common to group all services behind a single component called an API gateway. This [traefik article](https://traefik.io/glossary/api-gateway-101/) presents the following diagram (credit to their website, not this repository):
+
+![API gateway diagram](resources/api-gateway-diagram.png)
+
+This architecture routes all incoming traffic to a single component which main goal is to determine:
+
+```
+Is this request allowed to do what it is requesting to do?
+```
+
+The typical workflow is to:
+
+1. make sure that the request comes from an authenticated source
+2. add context to the request with information available
+3. forward the request to the corresponding service
+4. delegate the authorization to each service
+
+The `user-service` as defined in this repository helps with steps 1 and 2.
+
+## How does it work in traefik?
+
+Traefik has a [forwardAuth](https://doc.traefik.io/traefik/middlewares/http/forwardauth) middleware which allows (as its name suggests) to forward any request it receives to an external authentication server. Based on the response of this server it either denies or forwars the request.
+
+As all requests are routed towards this endpoint by traefik before they reach the target service, we can guarantees an efficient filtering and only allow authenticated users to access our cluster.
+
+## How does this service come into play?
+
+The `user-service`'s `auth` endpoint is the one we configure to be called by the `forwardAuth` middleware. It will automatically verify that:
+
+- the request has an API key
+- that this API key is known and valid
+- enrich the request with the information (such as permissions) before forwarding it to the service responsible to handle the request
+
+It is then up to each service to check those permissions and take a decision based on whether the request should be authorized or not.
 
 # Cheat sheet
 

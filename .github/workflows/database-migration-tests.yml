@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       ci: ${{ steps.filter.outputs.ci }}
-      test-db: ${{ steps.filter.outputs.test-db }}
       users-db: ${{ steps.filter.outputs.users-db }}
     steps:
       - uses: actions/checkout@v4
@@ -23,8 +22,6 @@ jobs:
           filters: |
             ci:
               - '.github/workflows/database-migration-tests.yml'
-            test-db:
-              - 'database/test/**'
             users-db:
               - 'database/users/**'
   validate-users-db:

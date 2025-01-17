@@ -27,7 +27,7 @@ func main() {
 
 	conf, err := config.Load(determineConfigName(), internal.DefaultConfig())
 	if err != nil {
-		log.Errorf("Failed to create db connection: %v", err)
+		log.Errorf("Failed to load configuration: %v", err)
 		os.Exit(1)
 	}
 

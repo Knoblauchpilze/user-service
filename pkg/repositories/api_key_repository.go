@@ -3,8 +3,8 @@ package repositories
 import (
 	"context"
 
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/db"
-	"github.com/KnoblauchPilze/user-service/pkg/persistence"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
+	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/google/uuid"
 )
 

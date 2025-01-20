@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/KnoblauchPilze/user-service/pkg/persistence"
+	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )

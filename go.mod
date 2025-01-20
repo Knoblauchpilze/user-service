@@ -1,9 +1,9 @@
-module github.com/KnoblauchPilze/user-service
+module github.com/Knoblauchpilze/user-service
 
 go 1.23.2
 
 require (
-	github.com/KnoblauchPilze/easy-assert v0.3.0
+	github.com/Knoblauchpilze/easy-assert v0.4.0
 	github.com/stretchr/testify v1.10.0
 )
 
@@ -11,7 +11,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/jackc/pgx/v5 v5.7.1 // indirect
+	github.com/jackc/pgx/v5 v5.7.2 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -37,7 +37,7 @@ require (
 )
 
 require (
-	github.com/KnoblauchPilze/backend-toolkit v0.2.1
+	github.com/Knoblauchpilze/backend-toolkit v0.3.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect

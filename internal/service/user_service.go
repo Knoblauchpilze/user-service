@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/db"
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
-	"github.com/KnoblauchPilze/user-service/pkg/communication"
-	"github.com/KnoblauchPilze/user-service/pkg/persistence"
-	"github.com/KnoblauchPilze/user-service/pkg/repositories"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
+	"github.com/Knoblauchpilze/user-service/pkg/communication"
+	"github.com/Knoblauchpilze/user-service/pkg/persistence"
+	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 	"github.com/google/uuid"
 )
 

@@ -85,7 +85,7 @@ Each of these actions are typically handled by a dedicated handler in the [contr
 
 ## The session concept
 
-In order to allow users to be authenticated before granting access to a service, the `user-service` provides a session mechanism. It is quite a wide topic and you can find more resources on the research that went into producing the strategy used in this repository (including whether this is a RESTful approach or not) in a dedicated [PR #7](https://github.com/KnoblauchPilze/galactic-sovereign/pull/7) (this service was initially part of the `galactic-sovereign` monorepo).
+In order to allow users to be authenticated before granting access to a service, the `user-service` provides a session mechanism. It is quite a wide topic and you can find more resources on the research that went into producing the strategy used in this repository (including whether this is a RESTful approach or not) in a dedicated [PR #7](https://github.com/Knoblauchpilze/galactic-sovereign/pull/7) (this service was initially part of the `galactic-sovereign` monorepo).
 
 Upon calling the `POST /v1/users/sessions` route (see [auth](internal/controller/auth.go) controller), the user will be able to obtain a token (see [API keys](#api-keys)), valid for a certain period of time.
 

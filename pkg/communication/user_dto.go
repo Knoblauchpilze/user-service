@@ -3,7 +3,7 @@ package communication
 import (
 	"time"
 
-	"github.com/KnoblauchPilze/user-service/pkg/persistence"
+	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/google/uuid"
 )
 

@@ -3,9 +3,9 @@ package controller
 import (
 	"net/http"
 
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/errors"
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/rest"
-	"github.com/KnoblauchPilze/user-service/internal/service"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
+	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )

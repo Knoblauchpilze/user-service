@@ -4,14 +4,14 @@ import (
 	"context"
 	"os"
 
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/config"
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/db"
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/logger"
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/server"
-	"github.com/KnoblauchPilze/user-service/cmd/users/internal"
-	"github.com/KnoblauchPilze/user-service/internal/controller"
-	"github.com/KnoblauchPilze/user-service/internal/service"
-	"github.com/KnoblauchPilze/user-service/pkg/repositories"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/config"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/logger"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/server"
+	"github.com/Knoblauchpilze/user-service/cmd/users/internal"
+	"github.com/Knoblauchpilze/user-service/internal/controller"
+	"github.com/Knoblauchpilze/user-service/internal/service"
+	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 )
 
 func determineConfigName() string {

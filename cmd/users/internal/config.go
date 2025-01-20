@@ -3,9 +3,9 @@ package internal
 import (
 	"time"
 
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/db/postgresql"
-	"github.com/KnoblauchPilze/backend-toolkit/pkg/server"
-	"github.com/KnoblauchPilze/user-service/internal/service"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/db/postgresql"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/server"
+	"github.com/Knoblauchpilze/user-service/internal/service"
 )
 
 type Configuration struct {

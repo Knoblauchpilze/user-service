@@ -7,6 +7,7 @@ import (
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/config"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/logger"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/process"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/server"
 	"github.com/Knoblauchpilze/user-service/cmd/users/internal"
 	"github.com/Knoblauchpilze/user-service/internal/controller"
@@ -69,7 +70,13 @@ func main() {
 		}
 	}
 
-	err = s.Start(context.Background())
+	wait, err := process.StartWithSignalHandler(context.Background(), s)
+	if err != nil {
+		log.Errorf("Failed to start server: %v", err)
+		os.Exit(1)
+	}
+
+	err = wait()
 	if err != nil {
 		log.Errorf("Error while serving: %v", err)
 		os.Exit(1)

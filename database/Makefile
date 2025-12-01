@@ -4,7 +4,7 @@ DB_HOST ?= localhost
 DB_PORT ?= 5432
 DB_NAME ?= db_user_service
 DB_USER ?= user_service_admin
-DB_PASSWORD ?= "comes-from-the-environment"
+DB_PASSWORD ?= admin_password
 
 MIGRATION_STEPS ?= 1
 

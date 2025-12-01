@@ -1,8 +1,6 @@
 module github.com/Knoblauchpilze/user-service
 
-go 1.23.2
-
-toolchain go1.24.1
+go 1.24.1
 
 require (
 	github.com/Knoblauchpilze/easy-assert v0.4.0

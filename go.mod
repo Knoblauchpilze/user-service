@@ -9,7 +9,7 @@ require (
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/jackc/pgx/v5 v5.8.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
@@ -31,7 +31,7 @@ require (
 )
 
 require (
-	github.com/Knoblauchpilze/backend-toolkit v0.4.4
+	github.com/Knoblauchpilze/backend-toolkit v0.4.5
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect

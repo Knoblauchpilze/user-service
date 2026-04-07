@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"os"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/config"
@@ -24,17 +25,17 @@ func determineConfigName() string {
 }
 
 func main() {
-	log := logger.New(logger.NewPrettyWriter(os.Stdout))
+	log := logger.New(os.Stdout)
 
 	conf, err := config.Load(determineConfigName(), internal.DefaultConfig())
 	if err != nil {
-		log.Errorf("Failed to load configuration: %v", err)
+		log.Error("Failed to load configuration", slog.Any("error", err))
 		os.Exit(1)
 	}
 
 	conn, err := db.New(context.Background(), conf.Database)
 	if err != nil {
-		log.Errorf("Failed to create db connection: %v", err)
+		log.Error("Failed to create db connection", slog.Any("error", err))
 		os.Exit(1)
 	}
 	defer conn.Close(context.Background())
@@ -51,34 +52,34 @@ func main() {
 
 	for _, route := range controller.UserEndpoints(userService) {
 		if err := s.AddRoute(route); err != nil {
-			log.Errorf("Failed to register route %v: %v", route.Path(), err)
+			log.Error("Failed to register route", slog.String("route", route.Path()), slog.Any("error", err))
 			os.Exit(1)
 		}
 	}
 
 	for _, route := range controller.HealthCheckEndpoints(conn) {
 		if err := s.AddRoute(route); err != nil {
-			log.Errorf("Failed to register route %v: %v", route.Path(), err)
+			log.Error("Failed to register route", slog.String("route", route.Path()), slog.Any("error", err))
 			os.Exit(1)
 		}
 	}
 
 	for _, route := range controller.AuthEndpoints(authService) {
 		if err := s.AddRoute(route); err != nil {
-			log.Errorf("Failed to register route %v: %v", route.Path(), err)
+			log.Error("Failed to register route", slog.String("route", route.Path()), slog.Any("error", err))
 			os.Exit(1)
 		}
 	}
 
 	wait, err := process.StartWithSignalHandler(context.Background(), s)
 	if err != nil {
-		log.Errorf("Failed to start server: %v", err)
+		log.Error("Failed to start server", slog.Any("error", err))
 		os.Exit(1)
 	}
 
 	err = wait()
 	if err != nil {
-		log.Errorf("Error while serving: %v", err)
+		log.Error("Error while serving", slog.Any("error", err))
 		os.Exit(1)
 	}
 }

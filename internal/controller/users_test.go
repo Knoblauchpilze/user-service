@@ -16,6 +16,7 @@ import (
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -149,8 +150,7 @@ func TestIT_UserController_GetUser(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(user.Id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -175,8 +175,7 @@ func TestIT_UserController_GetUser_WhenUserDoesNotExist_ExpectFailure(t *testing
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -223,8 +222,7 @@ func TestUnit_UserController_UpdateUser_WhenUserHasWrongSyntax_ExpectBadRequest(
 	req := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader("not-a-user-dto-request"))
 
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues("e6349328-543b-4b4e-8a3c-4caf7b413589")
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: "e6349328-543b-4b4e-8a3c-4caf7b413589"}})
 
 	m := &mockUserService{}
 	err := updateUser(ctx, m)
@@ -251,8 +249,7 @@ func TestIT_UserController_UpdateUser(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/", &body)
 	req.Header.Set("Content-Type", "application/json")
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(user.Id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -286,8 +283,7 @@ func TestIT_UserController_UpdateUser_WhenUserDoesNotExist_ExpectFailure(t *test
 	req := httptest.NewRequest(http.MethodPost, "/", &body)
 	req.Header.Set("Content-Type", "application/json")
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -314,8 +310,7 @@ func TestIT_UserController_DeleteUser(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodDelete, "/", nil)
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(user.Id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -333,8 +328,7 @@ func TestIT_UserController_DeleteUser_WhenLoggedIn_ExpectApiKeyAlsoDeleted(t *te
 
 	req := httptest.NewRequest(http.MethodDelete, "/", nil)
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(user.Id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -351,8 +345,7 @@ func TestIT_UserController_DeleteUser_WhenUserDoesNotExist_ExpectSuccess(t *test
 
 	req := httptest.NewRequest(http.MethodDelete, "/", nil)
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -471,8 +464,7 @@ func TestIT_UserController_LogoutUser(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(user.Id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -490,8 +482,7 @@ func TestIT_UserController_LogoutUser_WhenNotLoggedIn_ExpectSuccess(t *testing.T
 
 	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(user.Id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
 
 	service, _ := createTestUserService(t)
 
@@ -508,8 +499,7 @@ func TestIT_UserController_LogoutUser_WhenUserDoesNotExist_ExpectFailure(t *test
 
 	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
 	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetParamNames("id")
-	ctx.SetParamValues(id.String())
+	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: id.String()}})
 
 	service, _ := createTestUserService(t)
 

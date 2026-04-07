@@ -13,7 +13,7 @@ import (
 	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +25,7 @@ func newTestConnection(t *testing.T) db.Connection {
 	return conn
 }
 
-func generateTestEchoContextFromRequest(req *http.Request) (echo.Context, *httptest.ResponseRecorder) {
+func generateTestEchoContextFromRequest(req *http.Request) (*echo.Context, *httptest.ResponseRecorder) {
 	e := echo.New()
 	rw := httptest.NewRecorder()
 
@@ -33,7 +33,7 @@ func generateTestEchoContextFromRequest(req *http.Request) (echo.Context, *httpt
 	return ctx, rw
 }
 
-type controllerFunc[Service any] func(echo.Context, Service) error
+type controllerFunc[Service any] func(*echo.Context, Service) error
 
 func assertStatusCode[Service any](t *testing.T, req *http.Request, service Service, callable controllerFunc[Service], expectedStatusCode int) {
 	ctx, rw := generateTestEchoContextFromRequest(req)

@@ -7,7 +7,7 @@ import (
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 const apiKeyHeaderKey = "X-Api-Key"
@@ -22,7 +22,7 @@ func AuthEndpoints(service service.AuthService) rest.Routes {
 	return out
 }
 
-func authUser(c echo.Context, s service.AuthService) error {
+func authUser(c *echo.Context, s service.AuthService) error {
 	apiKey, exists := tryGetApiKeyHeader(c.Request())
 	if !exists {
 		return c.JSON(http.StatusBadRequest, "Invalid API key")

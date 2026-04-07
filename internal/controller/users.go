@@ -11,7 +11,7 @@ import (
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 func UserEndpoints(service service.UserService) rest.Routes {
@@ -48,7 +48,7 @@ func UserEndpoints(service service.UserService) rest.Routes {
 	return out
 }
 
-func createUser(c echo.Context, s service.UserService) error {
+func createUser(c *echo.Context, s service.UserService) error {
 	// https://echo.labstack.com/docs/binding
 	var userDtoRequest communication.UserDtoRequest
 	err := c.Bind(&userDtoRequest)
@@ -74,7 +74,7 @@ func createUser(c echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusCreated, out)
 }
 
-func getUser(c echo.Context, s service.UserService) error {
+func getUser(c *echo.Context, s service.UserService) error {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
 	if err != nil {
@@ -93,7 +93,7 @@ func getUser(c echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func listUsers(c echo.Context, s service.UserService) error {
+func listUsers(c *echo.Context, s service.UserService) error {
 	out, err := s.List(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
@@ -102,7 +102,7 @@ func listUsers(c echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func updateUser(c echo.Context, s service.UserService) error {
+func updateUser(c *echo.Context, s service.UserService) error {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
 	if err != nil {
@@ -131,7 +131,7 @@ func updateUser(c echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusOK, out)
 }
 
-func deleteUser(c echo.Context, s service.UserService) error {
+func deleteUser(c *echo.Context, s service.UserService) error {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
 	if err != nil {
@@ -146,7 +146,7 @@ func deleteUser(c echo.Context, s service.UserService) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func loginUserByEmail(c echo.Context, s service.UserService) error {
+func loginUserByEmail(c *echo.Context, s service.UserService) error {
 	var userDtoRequest communication.UserDtoRequest
 	err := c.Bind(&userDtoRequest)
 	if err != nil {
@@ -168,7 +168,7 @@ func loginUserByEmail(c echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusCreated, out)
 }
 
-func logoutUser(c echo.Context, s service.UserService) error {
+func logoutUser(c *echo.Context, s service.UserService) error {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
 	if err != nil {

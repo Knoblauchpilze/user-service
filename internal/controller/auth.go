@@ -22,6 +22,18 @@ func AuthEndpoints(service service.AuthService) rest.Routes {
 	return out
 }
 
+// authUser godoc
+//
+// @Summary Authenticate API key
+// @Description Validates the API key provided in the request header.
+// @Tags auth
+// @Produce json
+// @Param X-Api-Key header string true "API key"
+// @Success 204
+// @Failure 400 {object} rest.ResponseEnvelope[string] "Invalid API key"
+// @Failure 403 {object} rest.ResponseEnvelope[string] "User is not authenticated"
+// @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
+// @Router /users/auth [get]
 func authUser(c *echo.Context, s service.AuthService) error {
 	apiKey, exists := tryGetApiKeyHeader(c.Request())
 	if !exists {

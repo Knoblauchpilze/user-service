@@ -1,19 +1,32 @@
+// Package main starts the user-service HTTP server.
+//
+// @title User Service API
+// @version 1.0
+// @description HTTP API for managing users, sessions, and API key authentication.
+// @BasePath /v1
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name X-Api-Key
 package main
 
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/config"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/logger"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/process"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/server"
+	docs "github.com/Knoblauchpilze/user-service/api"
 	"github.com/Knoblauchpilze/user-service/cmd/users/internal"
 	"github.com/Knoblauchpilze/user-service/internal/controller"
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
+	echoSwagger "github.com/swaggo/echo-swagger/v2"
 )
 
 func determineConfigName() string {
@@ -69,6 +82,13 @@ func main() {
 			log.Error("Failed to register route", slog.String("route", route.Path()), slog.Any("error", err))
 			os.Exit(1)
 		}
+	}
+
+	docs.SwaggerInfo.BasePath = conf.Server.BasePath
+	swaggerUi := rest.NewRawRoute(http.MethodGet, "/swagger/*", echoSwagger.WrapHandler)
+	if err := s.AddRoute(swaggerUi); err != nil {
+		log.Error("Failed to register route", slog.String("route", swaggerUi.Path()), slog.Any("error", err))
+		os.Exit(1)
 	}
 
 	wait, err := process.StartWithSignalHandler(context.Background(), s)

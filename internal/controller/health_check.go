@@ -18,6 +18,15 @@ func HealthCheckEndpoints(pool db.Connection) rest.Routes {
 	return out
 }
 
+// healthcheck godoc
+//
+// @Summary Health check
+// @Description Verifies that the service can reach its database.
+// @Tags health
+// @Produce json
+// @Success 200 {object} rest.ResponseEnvelope[string]
+// @Failure 503 {object} rest.ResponseEnvelope[string] "Database unavailable"
+// @Router /healthcheck [get]
 func healthcheck(c *echo.Context, pool db.Connection) error {
 	err := pool.Ping(c.Request().Context())
 	if err != nil {

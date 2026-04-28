@@ -7,18 +7,18 @@ import (
 	"github.com/google/uuid"
 )
 
+// https://stackoverflow.com/questions/18635671/how-to-define-multiple-name-tags-in-a-struct
 type UserDtoRequest struct {
-	// https://stackoverflow.com/questions/18635671/how-to-define-multiple-name-tags-in-a-struct
-	Email    string `json:"email" form:"email"`
-	Password string `json:"password" form:"password"`
+	Email    string `json:"email" form:"email" example:"user@example.com"`
+	Password string `json:"password" form:"password" example:"SecurePassword123"`
 }
 
 type UserDtoResponse struct {
-	Id       uuid.UUID `json:"id"`
-	Email    string    `json:"email"`
-	Password string    `json:"password"`
+	Id       uuid.UUID `json:"id" format:"uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Email    string    `json:"email" example:"user@example.com"`
+	Password string    `json:"password" example:"SecurePassword123"`
 
-	CreatedAt time.Time `json:"createdAt"`
+	CreatedAt time.Time `json:"createdAt" format:"date-time" example:"2026-04-27T20:56:59Z"`
 }
 
 func FromUserDtoRequest(user UserDtoRequest) persistence.User {

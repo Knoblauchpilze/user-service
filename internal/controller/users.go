@@ -48,6 +48,19 @@ func UserEndpoints(service service.UserService) rest.Routes {
 	return out
 }
 
+// createUser godoc
+//
+// @Summary Create user
+// @Description Creates a user from the provided credentials.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body communication.UserDtoRequest true "User payload"
+// @Success 201 {object} rest.ResponseEnvelope[communication.UserDtoResponse]
+// @Failure 400 {object} rest.ResponseEnvelope[string] "Invalid user syntax, email, or password"
+// @Failure 409 {object} rest.ResponseEnvelope[string] "Email already in use"
+// @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
+// @Router /users [post]
 func createUser(c *echo.Context, s service.UserService) error {
 	// https://echo.labstack.com/docs/binding
 	var userDtoRequest communication.UserDtoRequest
@@ -74,6 +87,18 @@ func createUser(c *echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusCreated, out)
 }
 
+// getUser godoc
+//
+// @Summary Get user
+// @Description Returns a user by its identifier.
+// @Tags users
+// @Produce json
+// @Param id path string true "User ID" Format(uuid)
+// @Success 200 {object} rest.ResponseEnvelope[communication.UserDtoResponse]
+// @Failure 400 {object} rest.ResponseEnvelope[string] "Invalid id syntax"
+// @Failure 404 {object} rest.ResponseEnvelope[string] "No such user"
+// @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
+// @Router /users/{id} [get]
 func getUser(c *echo.Context, s service.UserService) error {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
@@ -93,6 +118,15 @@ func getUser(c *echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusOK, out)
 }
 
+// listUsers godoc
+//
+// @Summary List users
+// @Description Returns the identifiers of all users.
+// @Tags users
+// @Produce json
+// @Success 200 {object} rest.ResponseEnvelope[[]string]
+// @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
+// @Router /users [get]
 func listUsers(c *echo.Context, s service.UserService) error {
 	out, err := s.List(c.Request().Context())
 	if err != nil {
@@ -102,6 +136,21 @@ func listUsers(c *echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusOK, out)
 }
 
+// updateUser godoc
+//
+// @Summary Update user
+// @Description Updates a user identified by its identifier.
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path string true "User ID" Format(uuid)
+// @Param user body communication.UserDtoRequest true "User payload"
+// @Success 200 {object} rest.ResponseEnvelope[communication.UserDtoResponse]
+// @Failure 400 {object} rest.ResponseEnvelope[string] "Invalid id or user syntax"
+// @Failure 404 {object} rest.ResponseEnvelope[string] "No such user"
+// @Failure 409 {object} rest.ResponseEnvelope[string] "User is not up to date"
+// @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
+// @Router /users/{id} [patch]
 func updateUser(c *echo.Context, s service.UserService) error {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
@@ -131,6 +180,16 @@ func updateUser(c *echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusOK, out)
 }
 
+// deleteUser godoc
+//
+// @Summary Delete user
+// @Description Deletes a user identified by its identifier.
+// @Tags users
+// @Param id path string true "User ID" Format(uuid)
+// @Success 204
+// @Failure 400 {object} rest.ResponseEnvelope[string] "Invalid id syntax"
+// @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
+// @Router /users/{id} [delete]
 func deleteUser(c *echo.Context, s service.UserService) error {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
@@ -146,6 +205,20 @@ func deleteUser(c *echo.Context, s service.UserService) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
+// loginUserByEmail godoc
+//
+// @Summary Create session
+// @Description Authenticates a user with email and password and returns an API key.
+// @Tags sessions
+// @Accept json
+// @Produce json
+// @Param user body communication.UserDtoRequest true "User credentials"
+// @Success 201 {object} rest.ResponseEnvelope[communication.ApiKeyDtoResponse]
+// @Failure 400 {object} rest.ResponseEnvelope[string] "Invalid user syntax"
+// @Failure 401 {object} rest.ResponseEnvelope[string] "Invalid credentials"
+// @Failure 404 {object} rest.ResponseEnvelope[string] "No such user"
+// @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
+// @Router /users/sessions [post]
 func loginUserByEmail(c *echo.Context, s service.UserService) error {
 	var userDtoRequest communication.UserDtoRequest
 	err := c.Bind(&userDtoRequest)
@@ -168,6 +241,17 @@ func loginUserByEmail(c *echo.Context, s service.UserService) error {
 	return c.JSON(http.StatusCreated, out)
 }
 
+// logoutUser godoc
+//
+// @Summary Delete session
+// @Description Revokes the active session for the specified user.
+// @Tags sessions
+// @Param id path string true "User ID" Format(uuid)
+// @Success 204
+// @Failure 400 {object} rest.ResponseEnvelope[string] "Invalid id syntax"
+// @Failure 404 {object} rest.ResponseEnvelope[string] "No such user"
+// @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
+// @Router /users/sessions/{id} [delete]
 func logoutUser(c *echo.Context, s service.UserService) error {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)

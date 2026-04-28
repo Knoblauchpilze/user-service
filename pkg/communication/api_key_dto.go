@@ -8,9 +8,9 @@ import (
 )
 
 type ApiKeyDtoResponse struct {
-	User       uuid.UUID `json:"user"`
-	Key        uuid.UUID `json:"key"`
-	ValidUntil time.Time `json:"validUntil"`
+	User       uuid.UUID `json:"user" format:"uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Key        uuid.UUID `json:"key" format:"uuid" example:"f47ac10b-58cc-4372-a567-0e02b2c3d479"`
+	ValidUntil time.Time `json:"validUntil" format:"date-time" example:"2026-04-28T20:56:59Z"`
 }
 
 func ToApiKeyDtoResponse(apiKey persistence.ApiKey) ApiKeyDtoResponse {

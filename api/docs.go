@@ -26,6 +26,11 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "required": [
+                    "key",
+                    "user",
+                    "validUntil"
+                ],
                 "type": "object"
             },
             "communication.UserDtoRequest": {
@@ -41,6 +46,10 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "required": [
+                    "email",
+                    "password"
+                ],
                 "type": "object"
             },
             "communication.UserDtoResponse": {
@@ -64,6 +73,12 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "required": [
+                    "createdAt",
+                    "email",
+                    "id",
+                    "password"
+                ],
                 "type": "object"
             },
             "rest.ResponseEnvelope-array_string": {
@@ -232,16 +247,9 @@ const docTemplate = `{
                     "content": {
                         "application/json": {
                             "schema": {
-                                "oneOf": [
-                                    {
-                                        "type": "object"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/communication.UserDtoRequest",
-                                        "summary": "user",
-                                        "description": "User payload"
-                                    }
-                                ]
+                                "$ref": "#/components/schemas/communication.UserDtoRequest",
+                                "summary": "user",
+                                "description": "User payload"
                             }
                         }
                     },
@@ -358,16 +366,9 @@ const docTemplate = `{
                     "content": {
                         "application/json": {
                             "schema": {
-                                "oneOf": [
-                                    {
-                                        "type": "object"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/communication.UserDtoRequest",
-                                        "summary": "user",
-                                        "description": "User credentials"
-                                    }
-                                ]
+                                "$ref": "#/components/schemas/communication.UserDtoRequest",
+                                "summary": "user",
+                                "description": "User credentials"
                             }
                         }
                     },
@@ -612,16 +613,9 @@ const docTemplate = `{
                     "content": {
                         "application/json": {
                             "schema": {
-                                "oneOf": [
-                                    {
-                                        "type": "object"
-                                    },
-                                    {
-                                        "$ref": "#/components/schemas/communication.UserDtoRequest",
-                                        "summary": "user",
-                                        "description": "User payload"
-                                    }
-                                ]
+                                "$ref": "#/components/schemas/communication.UserDtoRequest",
+                                "summary": "user",
+                                "description": "User payload"
                             }
                         }
                     },

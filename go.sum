@@ -1,5 +1,5 @@
-github.com/Knoblauchpilze/backend-toolkit v0.6.2 h1:Gr+xm5Ez27StVHuuq5msra5PfSOTOJIKzs0kJEkH5WA=
-github.com/Knoblauchpilze/backend-toolkit v0.6.2/go.mod h1:4h1o9pGV0nB2W4A2dfM9aachpyXQXaAkrCMGzkyVl9E=
+github.com/Knoblauchpilze/backend-toolkit v0.6.3 h1:An4Cjo5/haMJkd5KPR8reeuD170ks/XCHdX64/omfhw=
+github.com/Knoblauchpilze/backend-toolkit v0.6.3/go.mod h1:4h1o9pGV0nB2W4A2dfM9aachpyXQXaAkrCMGzkyVl9E=
 github.com/Knoblauchpilze/easy-assert v0.4.0 h1:+Eanp7k3nnaHPP3eLbif3qkTNx0rb/qq0lLCL0zO06E=
 github.com/Knoblauchpilze/easy-assert v0.4.0/go.mod h1:vFiqu9yxaa2pEFoz4eXp2tst7sn8U+CkT2dgppiEYTI=
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=
@@ -102,8 +102,6 @@ github.com/sv-tools/openapi v0.2.1 h1:ES1tMQMJFGibWndMagvdoo34T1Vllxr1Nlm5wz6b1a
 github.com/sv-tools/openapi v0.2.1/go.mod h1:k5VuZamTw1HuiS9p2Wl5YIDWzYnHG6/FgPOSFXLAhGg=
 github.com/swaggo/echo-swagger/v2 v2.0.1 h1:jKR3QiK+ciGjxE0+7qZ/azjtlx/pTVls7pJFJqdJoJI=
 github.com/swaggo/echo-swagger/v2 v2.0.1/go.mod h1:BbgiO9XKX6yYU5Rq4ejqVlQI0mVRv6ziFKd0XgdztnQ=
-github.com/swaggo/files/v2 v2.0.0 h1:hmAt8Dkynw7Ssz46F6pn8ok6YmGZqHSVLZ+HQM7i0kw=
-github.com/swaggo/files/v2 v2.0.0/go.mod h1:24kk2Y9NYEJ5lHuCra6iVwkMjIekMCaFq/0JQj66kyM=
 github.com/swaggo/files/v2 v2.0.2 h1:Bq4tgS/yxLB/3nwOMcul5oLEUKa877Ykgz3CJMVbQKU=
 github.com/swaggo/files/v2 v2.0.2/go.mod h1:TVqetIzZsO9OhHX1Am9sRf9LdrFZqoK49N37KON/jr0=
 github.com/swaggo/swag v1.16.2 h1:28Pp+8DkQoV+HLzLx8RGJZXNGKbFqnuvSbAAtoxiY04=

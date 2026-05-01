@@ -99,6 +99,11 @@ const docTemplate = `{
                         "$ref": "#/components/schemas/rest.Status"
                     }
                 },
+                "required": [
+                    "details",
+                    "requestId",
+                    "status"
+                ],
                 "type": "object"
             },
             "rest.ResponseEnvelope-communication_ApiKeyDtoResponse": {
@@ -115,6 +120,11 @@ const docTemplate = `{
                         "$ref": "#/components/schemas/rest.Status"
                     }
                 },
+                "required": [
+                    "details",
+                    "requestId",
+                    "status"
+                ],
                 "type": "object"
             },
             "rest.ResponseEnvelope-communication_UserDtoResponse": {
@@ -131,6 +141,11 @@ const docTemplate = `{
                         "$ref": "#/components/schemas/rest.Status"
                     }
                 },
+                "required": [
+                    "details",
+                    "requestId",
+                    "status"
+                ],
                 "type": "object"
             },
             "rest.ResponseEnvelope-string": {
@@ -147,6 +162,11 @@ const docTemplate = `{
                         "$ref": "#/components/schemas/rest.Status"
                     }
                 },
+                "required": [
+                    "details",
+                    "requestId",
+                    "status"
+                ],
                 "type": "object"
             },
             "rest.Status": {

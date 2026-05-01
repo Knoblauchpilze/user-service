@@ -68,6 +68,10 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/rest.Status'
+      required:
+      - details
+      - requestId
+      - status
       type: object
     rest.ResponseEnvelope-communication_ApiKeyDtoResponse:
       properties:
@@ -79,6 +83,10 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/rest.Status'
+      required:
+      - details
+      - requestId
+      - status
       type: object
     rest.ResponseEnvelope-communication_UserDtoResponse:
       properties:
@@ -90,6 +98,10 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/rest.Status'
+      required:
+      - details
+      - requestId
+      - status
       type: object
     rest.ResponseEnvelope-string:
       properties:
@@ -101,6 +113,10 @@ components:
           type: string
         status:
           $ref: '#/components/schemas/rest.Status'
+      required:
+      - details
+      - requestId
+      - status
       type: object
     rest.Status:
       enum:

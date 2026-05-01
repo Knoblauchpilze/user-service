@@ -53,7 +53,6 @@ func UserEndpoints(service service.UserService) rest.Routes {
 // @Summary Create user
 // @Description Creates a user from the provided credentials.
 // @Tags users
-// @Accept json
 // @Produce json
 // @Param user body communication.UserDtoRequest true "User payload"
 // @Success 201 {object} rest.ResponseEnvelope[communication.UserDtoResponse]
@@ -141,7 +140,6 @@ func listUsers(c *echo.Context, s service.UserService) error {
 // @Summary Update user
 // @Description Updates a user identified by its identifier.
 // @Tags users
-// @Accept json
 // @Produce json
 // @Param id path string true "User ID" Format(uuid)
 // @Param user body communication.UserDtoRequest true "User payload"
@@ -210,7 +208,6 @@ func deleteUser(c *echo.Context, s service.UserService) error {
 // @Summary Create session
 // @Description Authenticates a user with email and password and returns an API key.
 // @Tags sessions
-// @Accept json
 // @Produce json
 // @Param user body communication.UserDtoRequest true "User credentials"
 // @Success 201 {object} rest.ResponseEnvelope[communication.ApiKeyDtoResponse]

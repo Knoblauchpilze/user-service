@@ -3,7 +3,8 @@
 // @title User Service API
 // @version 1.0
 // @description HTTP API for managing users, sessions, and API key authentication.
-// @BasePath /v1
+// @servers.url /v1
+// @servers.description Base path for the user-service API
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name X-Api-Key
@@ -21,7 +22,7 @@ import (
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/process"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/server"
-	docs "github.com/Knoblauchpilze/user-service/api"
+	_ "github.com/Knoblauchpilze/user-service/api"
 	"github.com/Knoblauchpilze/user-service/cmd/users/internal"
 	"github.com/Knoblauchpilze/user-service/internal/controller"
 	"github.com/Knoblauchpilze/user-service/internal/service"
@@ -84,8 +85,7 @@ func main() {
 		}
 	}
 
-	docs.SwaggerInfo.BasePath = conf.Server.BasePath
-	swaggerUi := rest.NewRawRoute(http.MethodGet, "/swagger/*", echoSwagger.WrapHandler)
+	swaggerUi := rest.NewRawRoute(http.MethodGet, "/swagger/*", echoSwagger.WrapHandlerV3)
 	if err := s.AddRoute(swaggerUi); err != nil {
 		log.Error("Failed to register route", slog.String("route", swaggerUi.Path()), slog.Any("error", err))
 		os.Exit(1)

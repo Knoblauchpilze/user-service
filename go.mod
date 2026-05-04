@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/Knoblauchpilze/easy-assert v0.4.0
-	github.com/labstack/echo/v5 v5.1.0
+	github.com/labstack/echo/v5 v5.1.1
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag/v2 v2.0.0-rc4
 )

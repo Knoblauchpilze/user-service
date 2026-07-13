@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	github.com/Knoblauchpilze/easy-assert v0.4.0
-	github.com/labstack/echo/v5 v5.2.1
+	github.com/labstack/echo/v5 v5.3.0
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/swag/v2 v2.0.0-rc5
 )
@@ -34,9 +34,9 @@ require (
 	github.com/swaggo/files/v2 v2.0.2 // indirect
 	github.com/swaggo/swag v1.16.2 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/sys v0.40.0 // indirect
-	golang.org/x/time v0.14.0 // indirect
-	golang.org/x/tools v0.40.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
+	golang.org/x/tools v0.45.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
@@ -52,7 +52,7 @@ require (
 	github.com/rs/zerolog v1.35.1 // indirect
 	github.com/spf13/viper v1.21.0 // indirect
 	github.com/swaggo/echo-swagger/v2 v2.0.1
-	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/text v0.33.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

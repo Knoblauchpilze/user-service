@@ -90,19 +90,24 @@ const docTemplate = `{
                         "type": "array",
                         "uniqueItems": false
                     },
-                    "requestId": {
+                    "request_id": {
                         "example": "669cd40f-ea15-40a8-ab03-81e704a3ecf9",
                         "format": "uuid",
                         "type": "string"
                     },
                     "status": {
                         "$ref": "#/components/schemas/rest.Status"
+                    },
+                    "status_code": {
+                        "example": 200,
+                        "type": "integer"
                     }
                 },
                 "required": [
                     "details",
-                    "requestId",
-                    "status"
+                    "request_id",
+                    "status",
+                    "status_code"
                 ],
                 "type": "object"
             },
@@ -111,19 +116,24 @@ const docTemplate = `{
                     "details": {
                         "$ref": "#/components/schemas/communication.ApiKeyDtoResponse"
                     },
-                    "requestId": {
+                    "request_id": {
                         "example": "669cd40f-ea15-40a8-ab03-81e704a3ecf9",
                         "format": "uuid",
                         "type": "string"
                     },
                     "status": {
                         "$ref": "#/components/schemas/rest.Status"
+                    },
+                    "status_code": {
+                        "example": 200,
+                        "type": "integer"
                     }
                 },
                 "required": [
                     "details",
-                    "requestId",
-                    "status"
+                    "request_id",
+                    "status",
+                    "status_code"
                 ],
                 "type": "object"
             },
@@ -132,19 +142,24 @@ const docTemplate = `{
                     "details": {
                         "$ref": "#/components/schemas/communication.UserDtoResponse"
                     },
-                    "requestId": {
+                    "request_id": {
                         "example": "669cd40f-ea15-40a8-ab03-81e704a3ecf9",
                         "format": "uuid",
                         "type": "string"
                     },
                     "status": {
                         "$ref": "#/components/schemas/rest.Status"
+                    },
+                    "status_code": {
+                        "example": 200,
+                        "type": "integer"
                     }
                 },
                 "required": [
                     "details",
-                    "requestId",
-                    "status"
+                    "request_id",
+                    "status",
+                    "status_code"
                 ],
                 "type": "object"
             },
@@ -153,19 +168,24 @@ const docTemplate = `{
                     "details": {
                         "type": "string"
                     },
-                    "requestId": {
+                    "request_id": {
                         "example": "669cd40f-ea15-40a8-ab03-81e704a3ecf9",
                         "format": "uuid",
                         "type": "string"
                     },
                     "status": {
                         "$ref": "#/components/schemas/rest.Status"
+                    },
+                    "status_code": {
+                        "example": 200,
+                        "type": "integer"
                     }
                 },
                 "required": [
                     "details",
-                    "requestId",
-                    "status"
+                    "request_id",
+                    "status",
+                    "status_code"
                 ],
                 "type": "object"
             },

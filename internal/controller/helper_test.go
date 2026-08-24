@@ -12,6 +12,7 @@ import (
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db/postgresql"
 	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/require"
@@ -33,7 +34,7 @@ func generateTestEchoContextFromRequest(req *http.Request) (*echo.Context, *http
 	return ctx, rw
 }
 
-type controllerFunc[Service any] func(*echo.Context, Service) error
+type controllerFunc[Service any] func(*gin.Context, Service)
 
 func assertStatusCode[Service any](t *testing.T, req *http.Request, service Service, callable controllerFunc[Service], expectedStatusCode int) {
 	ctx, rw := generateTestEchoContextFromRequest(req)

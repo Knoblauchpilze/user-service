@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -99,7 +98,7 @@ func TestIT_ApiKeyRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.Get(context.Background(), id)
-	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_GetForKey(t *testing.T) {
@@ -121,7 +120,7 @@ func TestIT_ApiKeyRepository_GetForKey_WhenNotFound_ExpectFailure(t *testing.T) 
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.GetForKey(context.Background(), id)
-	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_GetForUser(t *testing.T) {
@@ -143,7 +142,7 @@ func TestIT_ApiKeyRepository_GetForUser_WhenNotFound_ExpectFailure(t *testing.T)
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.GetForUser(context.Background(), id)
-	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
 func TestIT_ApiKeyRepository_Delete(t *testing.T) {

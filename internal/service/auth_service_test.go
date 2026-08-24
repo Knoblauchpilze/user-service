@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 	"github.com/google/uuid"
@@ -22,13 +21,13 @@ type mockApiKeyRepository struct {
 
 func TestUnit_AuthService_Authenticate_WhenKeyDoesNotExist_ExpectFailure(t *testing.T) {
 	repo := &mockApiKeyRepository{
-		err: errors.NewCode(db.NoMatchingRows),
+		err: db.ErrNoMatchingRows,
 	}
 
 	service := newTestAuthService(repo)
 	_, err := service.Authenticate(context.Background(), uuid.New())
 
-	assert.True(t, errors.IsErrorWithCode(err, UserNotAuthenticated), "Actual err: %v", err)
+	assert.ErrorIs(t, err, ErrUserNotAuthenticated, "Actual err: %v", err)
 }
 
 func TestUnit_AuthService_Authenticate_WhenKeyExpired_ExpectFailure(t *testing.T) {
@@ -42,7 +41,7 @@ func TestUnit_AuthService_Authenticate_WhenKeyExpired_ExpectFailure(t *testing.T
 	service := newTestAuthService(repo)
 	_, err := service.Authenticate(context.Background(), uuid.New())
 
-	assert.True(t, errors.IsErrorWithCode(err, AuthenticationExpired), "Actual err: %v", err)
+	assert.ErrorIs(t, err, ErrAuthenticationExpired, "Actual err: %v", err)
 }
 
 func TestIT_AuthService_Authenticate_WhenAuthenticated_ExpectSuccess(t *testing.T) {

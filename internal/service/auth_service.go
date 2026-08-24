@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 	"github.com/google/uuid"
@@ -30,15 +29,15 @@ func (s *authServiceImpl) Authenticate(ctx context.Context, apiKey uuid.UUID) (c
 
 	key, err := s.apiKeyRepo.GetForKey(ctx, apiKey)
 	if err != nil {
-		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
-			return out, errors.NewCode(UserNotAuthenticated)
+		if err == db.ErrNoMatchingRows {
+			return out, ErrUserNotAuthenticated
 		}
 
 		return out, err
 	}
 
 	if key.ValidUntil.Before(time.Now()) {
-		return out, errors.NewCode(AuthenticationExpired)
+		return out, ErrAuthenticationExpired
 	}
 
 	return out, nil

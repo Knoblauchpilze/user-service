@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
@@ -45,10 +44,10 @@ func (s *userServiceImpl) Create(ctx context.Context, userDto communication.User
 	user := communication.FromUserDtoRequest(userDto)
 
 	if user.Email == "" {
-		return communication.UserDtoResponse{}, errors.NewCode(InvalidEmail)
+		return communication.UserDtoResponse{}, ErrInvalidEmail
 	}
 	if user.Password == "" {
-		return communication.UserDtoResponse{}, errors.NewCode(InvalidPassword)
+		return communication.UserDtoResponse{}, ErrInvalidPassword
 	}
 
 	createdUser, err := s.userRepo.Create(ctx, user)
@@ -118,7 +117,7 @@ func (s *userServiceImpl) Login(ctx context.Context, user communication.UserDtoR
 	}
 
 	if user.Password != dbUser.Password {
-		return communication.ApiKeyDtoResponse{}, errors.NewCode(InvalidCredentials)
+		return communication.ApiKeyDtoResponse{}, ErrInvalidCredentials
 	}
 
 	apiKey := persistence.ApiKey{

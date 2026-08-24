@@ -6,7 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/google/uuid"
@@ -53,7 +52,7 @@ func TestUnit_AuthController_WhenUserNotAuthenticated_ExpectForbidden(t *testing
 	req.Header.Add("X-Api-Key", "e6349328-543b-4b4e-8a3c-4caf7b413589")
 
 	m := &mockAuthService{
-		err: errors.NewCode(service.UserNotAuthenticated),
+		err: service.ErrUserNotAuthenticated,
 	}
 	expectedBody := `
 	{
@@ -69,7 +68,7 @@ func TestUnit_AuthController_WhenApiKeyIsExpired_ExpectForbidden(t *testing.T) {
 	req.Header.Add("X-Api-Key", "e6349328-543b-4b4e-8a3c-4caf7b413589")
 
 	m := &mockAuthService{
-		err: errors.NewCode(service.AuthenticationExpired),
+		err: service.ErrAuthenticationExpired,
 	}
 	expectedBody := `
 	{

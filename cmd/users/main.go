@@ -13,21 +13,19 @@ package main
 import (
 	"context"
 	"log/slog"
-	"net/http"
 	"os"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/config"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/logger"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/process"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/server"
 	_ "github.com/Knoblauchpilze/user-service/api"
 	"github.com/Knoblauchpilze/user-service/cmd/users/internal"
 	"github.com/Knoblauchpilze/user-service/internal/controller"
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
-	echoSwagger "github.com/swaggo/echo-swagger/v2"
+	"github.com/gin-gonic/gin"
 )
 
 func determineConfigName() string {
@@ -40,6 +38,8 @@ func determineConfigName() string {
 
 func main() {
 	log := logger.New(os.Stdout)
+
+	gin.SetMode(gin.ReleaseMode)
 
 	conf, err := config.Load(determineConfigName(), internal.DefaultConfig())
 	if err != nil {
@@ -85,10 +85,15 @@ func main() {
 		}
 	}
 
-	swaggerUi := rest.NewRawRoute(http.MethodGet, "/swagger/*", echoSwagger.WrapHandlerV3)
-	if err := s.AddRoute(swaggerUi); err != nil {
-		log.Error("Failed to register route", slog.String("route", swaggerUi.Path()), slog.Any("error", err))
+	swaggerRoutes, err := internal.SwaggerEndpoints(conf.Server)
+	if err != nil {
+		log.Error("Failed to create swagger routes", slog.Any("error", err))
 		os.Exit(1)
+	}
+	for _, route := range swaggerRoutes {
+		if err := s.AddRoute(route); err != nil {
+			log.Error("Failed to register route", slog.String("route", route.Path()), slog.Any("error", err))
+		}
 	}
 
 	wait, err := process.StartWithSignalHandler(context.Background(), s)

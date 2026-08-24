@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/db/pgx"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	eassert "github.com/Knoblauchpilze/easy-assert/assert"
 	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/google/uuid"
@@ -50,7 +48,9 @@ func TestIT_UserRepository_Create_WhenDuplicateName_ExpectFailure(t *testing.T) 
 
 	_, err := repo.Create(context.Background(), newUser)
 
-	assert.True(t, errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
+	actual, ok := db.AsDatabaseError(err)
+	require.True(t, ok)
+	assert.Equal(t, db.ErrUniqueConstraintViolation, actual.Code)
 	assertUserDoesNotExist(t, conn, newUser.Id)
 }
 
@@ -70,7 +70,7 @@ func TestIT_UserRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	_, err := repo.Get(context.Background(), id)
-	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
 func TestIT_UserRepository_GetByEmail(t *testing.T) {
@@ -87,7 +87,7 @@ func TestIT_UserRepository_GetByEmail_WhenNotFound_ExpectFailure(t *testing.T) {
 	repo, _ := newTestUserRepository(t)
 
 	_, err := repo.GetByEmail(context.Background(), "not-an-email")
-	assert.True(t, errors.IsErrorWithCode(err, db.NoMatchingRows), "Actual err: %v", err)
+	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
 func TestIT_UserRepository_List(t *testing.T) {
@@ -136,7 +136,9 @@ func TestIT_UserRepository_Update_WhenNameAlreadyExists_ExpectFailure(t *testing
 
 	_, err := repo.Update(context.Background(), updatedUser)
 
-	assert.True(t, errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation), "Actual err: %v", err)
+	actual, ok := db.AsDatabaseError(err)
+	require.True(t, ok)
+	assert.Equal(t, db.ErrUniqueConstraintViolation, actual.Code)
 }
 
 func TestIT_UserRepository_Update_WhenVersionIsWrong_ExpectOptimisticLockException(t *testing.T) {
@@ -150,7 +152,7 @@ func TestIT_UserRepository_Update_WhenVersionIsWrong_ExpectOptimisticLockExcepti
 
 	_, err := repo.Update(context.Background(), updatedUser)
 
-	assert.True(t, errors.IsErrorWithCode(err, OptimisticLockException), "Actual err: %v", err)
+	assert.ErrorIs(t, err, ErrOptimisticLockException, "Actual err: %v", err)
 }
 
 func TestIT_UserRepository_Update_BumpsUpdatedAt(t *testing.T) {

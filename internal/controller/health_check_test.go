@@ -6,10 +6,13 @@ import (
 	"testing"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestIT_HealthcheckController(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	conn := newTestConnection(t)
 	handler := createServiceAwareHttpHandler(healthcheck, conn)
 
@@ -25,6 +28,8 @@ func TestIT_HealthcheckController(t *testing.T) {
 }
 
 func TestIT_HealthcheckController_WhenConnectionClosed_ExpectServiceUnavailable(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	conn := newTestConnection(t)
 	conn.Close(t.Context())
 	handler := createServiceAwareHttpHandler(healthcheck, conn)

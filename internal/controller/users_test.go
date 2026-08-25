@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -14,9 +12,9 @@ import (
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type mockUserService struct {
@@ -24,6 +22,8 @@ type mockUserService struct {
 }
 
 func TestUnit_UserController_CreateUser_WhenUserHasWrongSyntax_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
 
@@ -39,6 +39,8 @@ func TestUnit_UserController_CreateUser_WhenUserHasWrongSyntax_ExpectBadRequest(
 }
 
 func TestIT_UserController_Create(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
 
@@ -61,6 +63,8 @@ func TestIT_UserController_Create(t *testing.T) {
 }
 
 func TestIT_UserController_Create_WhenEmailIsEmpty_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
 
@@ -80,6 +84,8 @@ func TestIT_UserController_Create_WhenEmailIsEmpty_ExpectFailure(t *testing.T) {
 }
 
 func TestIT_UserController_Create_WhenPasswordIsEmpty_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
 
@@ -99,6 +105,8 @@ func TestIT_UserController_Create_WhenPasswordIsEmpty_ExpectFailure(t *testing.T
 }
 
 func TestIT_UserController_Create_WhenEmailAlreadyExists_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 
@@ -120,6 +128,8 @@ func TestIT_UserController_Create_WhenEmailAlreadyExists_ExpectFailure(t *testin
 }
 
 func TestUnit_UserController_GetUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](getUser, m)
 
@@ -136,6 +146,8 @@ func TestUnit_UserController_GetUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *te
 }
 
 func TestIT_UserController_GetUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 	handler := createServiceAwareHttpHandler(getUser, service)
@@ -157,6 +169,8 @@ func TestIT_UserController_GetUser(t *testing.T) {
 }
 
 func TestIT_UserController_GetUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, _ := createTestUserService(t)
 	handler := createServiceAwareHttpHandler(getUser, service)
 
@@ -173,6 +187,8 @@ func TestIT_UserController_GetUser_WhenUserDoesNotExist_ExpectFailure(t *testing
 }
 
 func TestIT_UserController_ListUsers(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user1 := insertTestUser(t, conn)
 	user2 := insertTestUser(t, conn)
@@ -192,6 +208,8 @@ func TestIT_UserController_ListUsers(t *testing.T) {
 }
 
 func TestUnit_UserController_UpdateUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](updateUser, m)
 
@@ -208,6 +226,8 @@ func TestUnit_UserController_UpdateUser_WhenIdHasWrongSyntax_ExpectBadRequest(t 
 }
 
 func TestUnit_UserController_UpdateUser_WhenUserHasWrongSyntax_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 	handler := createServiceAwareHttpHandler(updateUser, service)
@@ -225,6 +245,8 @@ func TestUnit_UserController_UpdateUser_WhenUserHasWrongSyntax_ExpectBadRequest(
 }
 
 func TestIT_UserController_UpdateUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 	handler := createServiceAwareHttpHandler(updateUser, service)
@@ -248,6 +270,8 @@ func TestIT_UserController_UpdateUser(t *testing.T) {
 }
 
 func TestIT_UserController_UpdateUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	handler := createServiceAwareHttpHandler(updateUser, service)
 
@@ -270,6 +294,8 @@ func TestIT_UserController_UpdateUser_WhenUserDoesNotExist_ExpectFailure(t *test
 }
 
 func TestUnit_UserController_DeleteUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](deleteUser, m)
 
@@ -286,6 +312,8 @@ func TestUnit_UserController_DeleteUser_WhenIdHasWrongSyntax_ExpectBadRequest(t 
 }
 
 func TestIT_UserController_DeleteUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 
@@ -303,6 +331,8 @@ func TestIT_UserController_DeleteUser(t *testing.T) {
 }
 
 func TestIT_UserController_DeleteUser_WhenLoggedIn_ExpectApiKeyAlsoDeleted(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 	apiKey := insertApiKeyForUser(t, conn, user.Id)
@@ -321,6 +351,8 @@ func TestIT_UserController_DeleteUser_WhenLoggedIn_ExpectApiKeyAlsoDeleted(t *te
 }
 
 func TestIT_UserController_DeleteUser_WhenUserDoesNotExist_ExpectSuccess(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	handler := createServiceAwareHttpHandler(deleteUser, service)
 
@@ -337,6 +369,8 @@ func TestIT_UserController_DeleteUser_WhenUserDoesNotExist_ExpectSuccess(t *test
 }
 
 func TestUnit_UserController_LoginUserByEmail_WhenUserHasWrongSyntax_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](loginUserByEmail, m)
 
@@ -351,95 +385,83 @@ func TestUnit_UserController_LoginUserByEmail_WhenUserHasWrongSyntax_ExpectBadRe
 	assert.Equal(t, "Invalid user syntax", actual)
 }
 
-// TODO: Add gin.SetMode(gin.Test??)
-// TODO: To update
 func TestIT_UserController_LoginUserByEmail(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
+	handler := createServiceAwareHttpHandler(loginUserByEmail, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
 
 	requestDto := communication.UserDtoRequest{
 		Email:    user.Email,
 		Password: user.Password,
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = loginUserByEmail(ctx, service)
-	assert.Nil(t, err)
-
-	var responseDto communication.ApiKeyDtoResponse
-	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
-	require.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPatch, requestDto)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusCreated, rw.Code)
+	actual := decodeResponseBody[communication.ApiKeyDtoResponse](t, rw)
 	assertEmailForUser(t, conn, user.Id, requestDto.Email)
-	assert.Equal(t, user.Id, responseDto.User)
-	assertApiKeyExistsByKey(t, conn, responseDto.Key)
+	assert.Equal(t, user.Id, actual.User)
+	assertApiKeyExistsByKey(t, conn, actual.Key)
 	expectedApproximateValidity := time.Now().Add(1 * time.Hour)
 	safetyMargin := 5 * time.Second
-	assert.True(t, eassert.AreTimeCloserThan(responseDto.ValidUntil, expectedApproximateValidity, safetyMargin))
+	assert.True(t, eassert.AreTimeCloserThan(actual.ValidUntil, expectedApproximateValidity, safetyMargin))
 }
 
 func TestIT_UserController_LoginUserByEmail_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
+	user := insertTestUser(t, conn)
+	handler := createServiceAwareHttpHandler(loginUserByEmail, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
 	requestDto := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("some-email-%s", uuid.NewString()),
 		Password: "my-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = loginUserByEmail(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPatch, requestDto)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNotFound, rw.Code)
-	assert.Equal(t, "\"No such user\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "No such user", actual)
 }
 
 func TestIT_UserController_LoginUserByEmail_WhenPasswordDoesNotMatch_ExpectFailure(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
+	handler := createServiceAwareHttpHandler(loginUserByEmail, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
 
 	requestDto := communication.UserDtoRequest{
 		Email:    user.Email,
 		Password: fmt.Sprintf("%s-and-stuff", user.Password),
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = loginUserByEmail(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPatch, requestDto)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusUnauthorized, rw.Code)
-	assert.Equal(t, "\"Invalid credentials\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid credentials", actual)
 }
 
-// TOD: End to update
-
 func TestUnit_UserController_LogoutUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockUserService{}
 	handler := createServiceAwareHttpHandler[service.UserService](logoutUser, m)
 
@@ -456,6 +478,8 @@ func TestUnit_UserController_LogoutUser_WhenIdHasWrongSyntax_ExpectBadRequest(t 
 }
 
 func TestIT_UserController_LogoutUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 	apiKey := insertApiKeyForUser(t, conn, user.Id)
@@ -475,6 +499,8 @@ func TestIT_UserController_LogoutUser(t *testing.T) {
 }
 
 func TestIT_UserController_LogoutUser_WhenNotLoggedIn_ExpectSuccess(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 
@@ -492,6 +518,8 @@ func TestIT_UserController_LogoutUser_WhenNotLoggedIn_ExpectSuccess(t *testing.T
 }
 
 func TestIT_UserController_LogoutUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	service, _ := createTestUserService(t)
 	handler := createServiceAwareHttpHandler(logoutUser, service)
 

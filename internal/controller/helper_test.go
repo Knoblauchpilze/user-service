@@ -19,13 +19,11 @@ import (
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/require"
 )
 
 var (
 	sampleApiKey = uuid.MustParse("e6349328-543b-4b4e-8a3c-4caf7b413589")
-	sampleUuid   = uuid.New()
 
 	dbTestConfig = postgresql.NewConfigForLocalhost("db_user_service", "user_service_manager", "manager_password")
 )
@@ -81,22 +79,9 @@ func addApiKeyHeader(t *testing.T, req *http.Request, apiKey string) {
 	req.Header.Add("X-Api-Key", apiKey)
 }
 
-func addSampleIdPathParam(t *testing.T, req *http.Request) {
-	t.Helper()
-	addIdPathParam(t, req, sampleUuid.String())
-}
-
 func addIdPathParam(t *testing.T, req *http.Request, id string) {
 	t.Helper()
 	req.URL.Path = fmt.Sprintf("/%s", id)
-}
-
-func generateTestEchoContextFromRequest(req *http.Request) (*echo.Context, *httptest.ResponseRecorder) {
-	e := echo.New()
-	rw := httptest.NewRecorder()
-
-	ctx := e.NewContext(req, rw)
-	return ctx, rw
 }
 
 func createTestGinRouter(

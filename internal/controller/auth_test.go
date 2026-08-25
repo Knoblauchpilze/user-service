@@ -9,6 +9,7 @@ import (
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,6 +21,8 @@ type mockAuthService struct {
 }
 
 func TestUnit_AuthController_WhenNoApiKeyProvided_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockAuthService{}
 	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
@@ -35,6 +38,8 @@ func TestUnit_AuthController_WhenNoApiKeyProvided_ExpectBadRequest(t *testing.T)
 }
 
 func TestUnit_AuthController_WhenMultipleApiKeysProvided_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockAuthService{}
 	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
@@ -52,6 +57,8 @@ func TestUnit_AuthController_WhenMultipleApiKeysProvided_ExpectBadRequest(t *tes
 }
 
 func TestUnit_AuthController_WhenApiKeyHasWrongSyntax_ExpectBadRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockAuthService{}
 	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
@@ -68,6 +75,8 @@ func TestUnit_AuthController_WhenApiKeyHasWrongSyntax_ExpectBadRequest(t *testin
 }
 
 func TestUnit_AuthController_WhenUserNotAuthenticated_ExpectForbidden(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockAuthService{
 		err: service.ErrUserNotAuthenticated,
 	}
@@ -86,6 +95,8 @@ func TestUnit_AuthController_WhenUserNotAuthenticated_ExpectForbidden(t *testing
 }
 
 func TestUnit_AuthController_WhenApiKeyIsExpired_ExpectForbidden(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockAuthService{
 		err: service.ErrAuthenticationExpired,
 	}
@@ -104,6 +115,8 @@ func TestUnit_AuthController_WhenApiKeyIsExpired_ExpectForbidden(t *testing.T) {
 }
 
 func TestUnit_AuthController(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	m := &mockAuthService{}
 	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 

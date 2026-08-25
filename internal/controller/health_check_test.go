@@ -42,6 +42,6 @@ func TestIT_HealthcheckController_WhenConnectionClosed_ExpectServiceUnavailable(
 
 	assert.Equal(t, http.StatusServiceUnavailable, rw.Code)
 	actual := decodeResponseBody[errors.ErrorWithCode](t, rw)
-	assert.Equal(t, 100, actual.Code)
-	assert.Equal(t, "An unexpected error occurred", actual.Message)
+	assert.Equal(t, errors.ErrorCode(100), actual.Code)
+	assert.Equal(t, "an unexpected error occurred", actual.Message)
 }

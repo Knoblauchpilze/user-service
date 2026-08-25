@@ -69,15 +69,6 @@ func createUser(c *gin.Context, s service.UserService) {
 
 	out, err := s.Create(c.Request.Context(), userDtoRequest)
 	if err != nil {
-		if err == service.ErrInvalidEmail {
-			c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid email")
-			return
-		}
-		if err == service.ErrInvalidPassword {
-			c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid password")
-			return
-		}
-
 		dbErr, ok := db.AsDatabaseError(err)
 		if ok && dbErr.Code == db.ErrUniqueConstraintViolation {
 			c.AbortWithStatusJSON(http.StatusConflict, "Email already in use")

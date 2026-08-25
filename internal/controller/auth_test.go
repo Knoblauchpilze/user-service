@@ -90,8 +90,8 @@ func TestUnit_AuthController_WhenUserNotAuthenticated_ExpectForbidden(t *testing
 
 	assert.Equal(t, http.StatusForbidden, rw.Code)
 	actual := decodeResponseBody[errors.ErrorWithCode](t, rw)
-	assert.Equal(t, 1000, actual.Code)
-	assert.Equal(t, "An unexpected error occurred", actual.Message)
+	assert.Equal(t, errors.ErrorCode(1000), actual.Code)
+	assert.Equal(t, "an unexpected error occurred", actual.Message)
 }
 
 func TestUnit_AuthController_WhenApiKeyIsExpired_ExpectForbidden(t *testing.T) {
@@ -110,8 +110,8 @@ func TestUnit_AuthController_WhenApiKeyIsExpired_ExpectForbidden(t *testing.T) {
 
 	assert.Equal(t, http.StatusForbidden, rw.Code)
 	actual := decodeResponseBody[errors.ErrorWithCode](t, rw)
-	assert.Equal(t, 1001, actual.Code)
-	assert.Equal(t, "An unexpected error occurred", actual.Message)
+	assert.Equal(t, errors.ErrorCode(1001), actual.Code)
+	assert.Equal(t, "an unexpected error occurred", actual.Message)
 }
 
 func TestUnit_AuthController(t *testing.T) {

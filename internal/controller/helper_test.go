@@ -163,6 +163,12 @@ func assertEmailForUser(t *testing.T, conn db.Connection, user uuid.UUID, expect
 	require.Equal(t, expectedEmail, value)
 }
 
+func assertPasswordForUser(t *testing.T, conn db.Connection, user uuid.UUID, expectedPassword string) {
+	value, err := db.QueryOne[string](context.Background(), conn, "SELECT password FROM api_user WHERE id = $1", user)
+	require.Nil(t, err)
+	require.Equal(t, expectedPassword, value)
+}
+
 func insertApiKeyForUser(t *testing.T, conn db.Connection, userId uuid.UUID) persistence.ApiKey {
 	repo := repositories.NewApiKeyRepository(conn)
 

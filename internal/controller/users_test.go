@@ -41,8 +41,8 @@ func TestUnit_UserController_CreateUser_WhenUserHasWrongSyntax_ExpectBadRequest(
 func TestIT_UserController_Create(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	m := &mockUserService{}
-	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
+	service, conn := createTestUserService(t)
+	handler := createServiceAwareHttpHandler(createUser, service)
 
 	r := createTestGinRouter(t, http.MethodPost, "/", handler)
 
@@ -58,7 +58,6 @@ func TestIT_UserController_Create(t *testing.T) {
 	actual := decodeResponseBody[communication.UserDtoResponse](t, rw)
 	assert.Equal(t, requestDto.Email, actual.Email)
 	assert.Equal(t, requestDto.Password, actual.Password)
-	conn := newTestConnection(t)
 	assertUserExists(t, conn, actual.Id)
 }
 
@@ -80,7 +79,7 @@ func TestIT_UserController_Create_WhenEmailIsEmpty_ExpectFailure(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, rw.Code)
 	actual := decodeResponseBody[string](t, rw)
-	assert.Equal(t, "Invalid email", actual)
+	assert.Equal(t, "Invalid user syntax", actual)
 }
 
 func TestIT_UserController_Create_WhenPasswordIsEmpty_ExpectFailure(t *testing.T) {
@@ -101,7 +100,7 @@ func TestIT_UserController_Create_WhenPasswordIsEmpty_ExpectFailure(t *testing.T
 
 	assert.Equal(t, http.StatusBadRequest, rw.Code)
 	actual := decodeResponseBody[string](t, rw)
-	assert.Equal(t, "Invalid password", actual)
+	assert.Equal(t, "Invalid user syntax", actual)
 }
 
 func TestIT_UserController_Create_WhenEmailAlreadyExists_ExpectFailure(t *testing.T) {
@@ -264,9 +263,10 @@ func TestIT_UserController_UpdateUser(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, rw.Code)
 	actual := decodeResponseBody[communication.UserDtoResponse](t, rw)
-	assert.Equal(t, user.Email, actual.Email)
-	assert.Equal(t, user.Password, actual.Password)
+	assert.Equal(t, requestDto.Email, actual.Email)
+	assert.Equal(t, requestDto.Password, actual.Password)
 	assertEmailForUser(t, conn, user.Id, requestDto.Email)
+	assertPasswordForUser(t, conn, user.Id, requestDto.Password)
 }
 
 func TestIT_UserController_UpdateUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
@@ -398,8 +398,7 @@ func TestIT_UserController_LoginUserByEmail(t *testing.T) {
 		Email:    user.Email,
 		Password: user.Password,
 	}
-	req := generateTestRequestWithJsonBody(t, http.MethodPatch, requestDto)
-	addIdPathParam(t, req, user.Id.String())
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
 	rw := httptest.NewRecorder()
 	r.ServeHTTP(rw, req)
 
@@ -416,8 +415,7 @@ func TestIT_UserController_LoginUserByEmail(t *testing.T) {
 func TestIT_UserController_LoginUserByEmail_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	service, conn := createTestUserService(t)
-	user := insertTestUser(t, conn)
+	service, _ := createTestUserService(t)
 	handler := createServiceAwareHttpHandler(loginUserByEmail, service)
 
 	r := createTestGinRouter(t, http.MethodPost, "/", handler)
@@ -426,8 +424,7 @@ func TestIT_UserController_LoginUserByEmail_WhenUserDoesNotExist_ExpectFailure(t
 		Email:    fmt.Sprintf("some-email-%s", uuid.NewString()),
 		Password: "my-password",
 	}
-	req := generateTestRequestWithJsonBody(t, http.MethodPatch, requestDto)
-	addIdPathParam(t, req, user.Id.String())
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
 	rw := httptest.NewRecorder()
 	r.ServeHTTP(rw, req)
 
@@ -449,8 +446,7 @@ func TestIT_UserController_LoginUserByEmail_WhenPasswordDoesNotMatch_ExpectFailu
 		Email:    user.Email,
 		Password: fmt.Sprintf("%s-and-stuff", user.Password),
 	}
-	req := generateTestRequestWithJsonBody(t, http.MethodPatch, requestDto)
-	addIdPathParam(t, req, user.Id.String())
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
 	rw := httptest.NewRecorder()
 	r.ServeHTTP(rw, req)
 

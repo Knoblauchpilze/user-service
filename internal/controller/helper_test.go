@@ -1,8 +1,12 @@
 package controller
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +14,7 @@ import (
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db/postgresql"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
 	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
 	"github.com/gin-gonic/gin"
@@ -18,12 +23,61 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var dbTestConfig = postgresql.NewConfigForLocalhost("db_user_service", "user_service_manager", "manager_password")
+var (
+	sampleApiKey = uuid.MustParse("e6349328-543b-4b4e-8a3c-4caf7b413589")
+
+	dbTestConfig = postgresql.NewConfigForLocalhost("db_user_service", "user_service_manager", "manager_password")
+)
 
 func newTestConnection(t *testing.T) db.Connection {
-	conn, err := db.New(context.Background(), dbTestConfig)
-	require.Nil(t, err)
+	t.Helper()
+
+	conn, err := db.New(t.Context(), dbTestConfig)
+	require.Nil(t, err, "Actual err: %v", err)
+
+	t.Cleanup(func() {
+		conn.Close(t.Context())
+	})
+
 	return conn
+}
+
+func generateTestRequest(
+	t *testing.T,
+	method string,
+	modifiers ...func(*testing.T, *http.Request),
+) *http.Request {
+	t.Helper()
+
+	ctx := rest.WithContextLogger(t.Context(), slog.Default())
+	req := httptest.NewRequestWithContext(ctx, method, "/", nil)
+
+	for _, modifier := range modifiers {
+		modifier(t, req)
+	}
+
+	return req
+}
+
+func generateTestRequestWithJsonBody[T any](
+	t *testing.T,
+	method string,
+	data T,
+) *http.Request {
+	ctx := rest.WithContextLogger(t.Context(), slog.Default())
+	req := httptest.NewRequestWithContext(ctx, method, "/", encodeBody(t, data))
+	req.Header.Set("Content-Type", "application/json")
+	return req
+}
+
+func addSampleApiKeyHeader(t *testing.T, req *http.Request) {
+	t.Helper()
+	req.Header.Add("X-Api-Key", sampleApiKey.String())
+}
+
+func addApiKeyHeader(t *testing.T, req *http.Request, apiKey string) {
+	t.Helper()
+	req.Header.Add("X-Api-Key", apiKey)
 }
 
 func generateTestEchoContextFromRequest(req *http.Request) (*echo.Context, *httptest.ResponseRecorder) {
@@ -32,6 +86,49 @@ func generateTestEchoContextFromRequest(req *http.Request) (*echo.Context, *http
 
 	ctx := e.NewContext(req, rw)
 	return ctx, rw
+}
+
+func createTestGinRouter(
+	t *testing.T,
+	method string,
+	path string,
+	handler gin.HandlerFunc,
+	middlewares ...gin.HandlerFunc,
+) *gin.Engine {
+	t.Helper()
+
+	r := gin.New()
+
+	for _, middleware := range middlewares {
+		r.Use(middleware)
+	}
+
+	r.Handle(method, path, handler)
+
+	return r
+}
+
+func encodeBody[T any](t *testing.T, data T) io.Reader {
+	t.Helper()
+
+	out, err := json.Marshal(data)
+	require.NoError(t, err, "Actual err: %v", err)
+
+	return bytes.NewReader(out)
+}
+
+func decodeResponseBody[T any](t *testing.T, w *httptest.ResponseRecorder) T {
+	t.Helper()
+
+	var responseBody T
+
+	rawBody, err := io.ReadAll(w.Result().Body)
+	require.NoError(t, err, "Actual err: %v", err)
+
+	err = json.Unmarshal(rawBody, &responseBody)
+	require.NoError(t, err, "Actual err: %v", err)
+
+	return responseBody
 }
 
 type controllerFunc[Service any] func(*gin.Context, Service)

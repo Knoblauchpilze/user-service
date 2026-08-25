@@ -26,113 +26,99 @@ type mockUserService struct {
 }
 
 func TestUnit_UserController_CreateUser_WhenUserHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("not-a-user-dto-request"))
-
 	m := &mockUserService{}
-	expectedBody := []byte("\"Invalid user syntax\"\n")
+	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
 
-	assertStatusCodeAndBody[service.UserService](t, req, m, createUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, "not-a-user-dto-request")
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid user syntax", actual)
 }
 
 func TestIT_UserController_Create(t *testing.T) {
+	m := &mockUserService{}
+	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
 	requestDto := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("my-email-%s", uuid.NewString()),
 		Password: "my-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, conn := createTestUserService(t)
-
-	err = createUser(ctx, service)
-	assert.Nil(t, err)
-
-	var responseDto communication.UserDtoResponse
-	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
-	require.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusCreated, rw.Code)
-	assert.Equal(t, requestDto.Email, responseDto.Email)
-	assert.Equal(t, requestDto.Password, responseDto.Password)
-	assertUserExists(t, conn, responseDto.Id)
+	actual := decodeResponseBody[communication.UserDtoResponse](t, rw)
+	assert.Equal(t, requestDto.Email, actual.Email)
+	assert.Equal(t, requestDto.Password, actual.Password)
+	conn := newTestConnection(t)
+	assertUserExists(t, conn, actual.Id)
 }
 
 func TestIT_UserController_Create_WhenEmailIsEmpty_ExpectFailure(t *testing.T) {
+	m := &mockUserService{}
+	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
 	requestDto := communication.UserDtoRequest{
 		Email:    "",
 		Password: "my-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = createUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusBadRequest, rw.Code)
-	assert.Equal(t, "\"Invalid email\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid email", actual)
 }
 
 func TestIT_UserController_Create_WhenPasswordIsEmpty_ExpectFailure(t *testing.T) {
+	m := &mockUserService{}
+	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
 	requestDto := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("my-email-%s", uuid.NewString()),
 		Password: "",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = createUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusBadRequest, rw.Code)
-	assert.Equal(t, "\"Invalid password\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid password", actual)
 }
 
 func TestIT_UserController_Create_WhenEmailAlreadyExists_ExpectFailure(t *testing.T) {
-	conn := newTestConnection(t)
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
+
+	handler := createServiceAwareHttpHandler(createUser, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
 
 	requestDto := communication.UserDtoRequest{
 		Email:    user.Email,
 		Password: "my-super-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = createUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusConflict, rw.Code)
-	assert.Equal(t, "\"Email already in use\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Email already in use", actual)
 }
 
 func TestUnit_UserController_GetUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {

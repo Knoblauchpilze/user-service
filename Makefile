@@ -2,6 +2,7 @@
 # https://stackoverflow.com/questions/34712972/in-a-makefile-how-can-i-fetch-and-assign-a-git-commit-hash-to-a-variable
 GIT_COMMIT_HASH=$(shell git rev-parse --short HEAD)
 SWAG_VERSION ?= v2.0.0-rc5
+GOLANGCI_LINT_VERSION ?= v2.12.2
 
 user-service-build:
 	docker build \
@@ -21,3 +22,12 @@ generate-api-spec:
 		--parseDependency \
 		--parseInternal \
 		--generatedTime=false
+
+tests:
+	go test ./...
+
+lint:
+	go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION} run ./...
+
+fix-lint:
+	go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION} run --fix ./...

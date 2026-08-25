@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
@@ -78,7 +77,9 @@ func createUser(c *gin.Context, s service.UserService) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid password")
 			return
 		}
-		if errors.IsErrorWithCode(err, db.ErrUniqueConstraintViolation) {
+
+		dbErr, ok := db.AsDatabaseError(err)
+		if ok && dbErr.Code == db.ErrUniqueConstraintViolation {
 			c.AbortWithStatusJSON(http.StatusConflict, "Email already in use")
 			return
 		}

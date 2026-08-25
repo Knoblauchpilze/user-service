@@ -6,9 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 type mockAuthService struct {
@@ -18,74 +20,100 @@ type mockAuthService struct {
 }
 
 func TestUnit_AuthController_WhenNoApiKeyProvided_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-
 	m := &mockAuthService{}
-	expectedBody := []byte("\"Invalid API key\"\n")
+	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
-	assertStatusCodeAndBody[service.AuthService](t, req, m, authUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
+
+	req := generateTestRequest(t, http.MethodGet)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid API key", actual)
 }
 
 func TestUnit_AuthController_WhenMultipleApiKeysProvided_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.Header.Add("X-Api-Key", "e6349328-543b-4b4e-8a3c-4caf7b413589")
-	req.Header.Add("X-Api-Key", "de2108c2-f87b-4033-825c-4ccbbb8b778e")
-
 	m := &mockAuthService{}
-	expectedBody := []byte("\"Invalid API key\"\n")
+	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
-	assertStatusCodeAndBody[service.AuthService](t, req, m, authUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
+
+	req := generateTestRequest(t, http.MethodGet, addSampleApiKeyHeader)
+	addApiKeyHeader(t, req, uuid.NewString())
+	addApiKeyHeader(t, req, uuid.NewString())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid API key", actual)
 }
 
 func TestUnit_AuthController_WhenApiKeyHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.Header.Add("X-Api-Key", "not-a-uuid")
-
 	m := &mockAuthService{}
-	expectedBody := []byte("\"Invalid API key\"\n")
+	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
-	assertStatusCodeAndBody[service.AuthService](t, req, m, authUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
+
+	req := generateTestRequest(t, http.MethodGet, addSampleApiKeyHeader)
+	addApiKeyHeader(t, req, "not-a-uuid")
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid API key", actual)
 }
 
 func TestUnit_AuthController_WhenUserNotAuthenticated_ExpectForbidden(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.Header.Add("X-Api-Key", "e6349328-543b-4b4e-8a3c-4caf7b413589")
-
 	m := &mockAuthService{
 		err: service.ErrUserNotAuthenticated,
 	}
-	expectedBody := `
-	{
-		"Code": 1000,
-		"Message": "An unexpected error occurred"
-	}`
+	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
-	assertStatusCodeAndJsonBody[service.AuthService](t, req, m, authUser, http.StatusForbidden, expectedBody)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
+
+	req := generateTestRequest(t, http.MethodGet, addSampleApiKeyHeader)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusForbidden, rw.Code)
+	actual := decodeResponseBody[errors.ErrorWithCode](t, rw)
+	assert.Equal(t, 1000, actual.Code)
+	assert.Equal(t, "An unexpected error occurred", actual.Message)
 }
 
 func TestUnit_AuthController_WhenApiKeyIsExpired_ExpectForbidden(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.Header.Add("X-Api-Key", "e6349328-543b-4b4e-8a3c-4caf7b413589")
-
 	m := &mockAuthService{
 		err: service.ErrAuthenticationExpired,
 	}
-	expectedBody := `
-	{
-		"Code": 1001,
-		"Message": "An unexpected error occurred"
-	}`
+	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
-	assertStatusCodeAndJsonBody[service.AuthService](t, req, m, authUser, http.StatusForbidden, expectedBody)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
+
+	req := generateTestRequest(t, http.MethodGet, addSampleApiKeyHeader)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusForbidden, rw.Code)
+	actual := decodeResponseBody[errors.ErrorWithCode](t, rw)
+	assert.Equal(t, 1001, actual.Code)
+	assert.Equal(t, "An unexpected error occurred", actual.Message)
 }
 
 func TestUnit_AuthController(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.Header.Add("X-Api-Key", "e6349328-543b-4b4e-8a3c-4caf7b413589")
-
 	m := &mockAuthService{}
+	handler := createServiceAwareHttpHandler[service.AuthService](authUser, m)
 
-	assertStatusCode[service.AuthService](t, req, m, authUser, http.StatusNoContent)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
+
+	req := generateTestRequest(t, http.MethodGet, addSampleApiKeyHeader)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusNoContent, rw.Code)
 }
 
 func (m *mockAuthService) Authenticate(ctx context.Context, apiKey uuid.UUID) (communication.AuthorizationDtoResponse, error) {

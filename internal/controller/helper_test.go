@@ -25,6 +25,7 @@ import (
 
 var (
 	sampleApiKey = uuid.MustParse("e6349328-543b-4b4e-8a3c-4caf7b413589")
+	sampleUuid   = uuid.New()
 
 	dbTestConfig = postgresql.NewConfigForLocalhost("db_user_service", "user_service_manager", "manager_password")
 )
@@ -72,12 +73,22 @@ func generateTestRequestWithJsonBody[T any](
 
 func addSampleApiKeyHeader(t *testing.T, req *http.Request) {
 	t.Helper()
-	req.Header.Add("X-Api-Key", sampleApiKey.String())
+	addApiKeyHeader(t, req, sampleApiKey.String())
 }
 
 func addApiKeyHeader(t *testing.T, req *http.Request, apiKey string) {
 	t.Helper()
 	req.Header.Add("X-Api-Key", apiKey)
+}
+
+func addSampleIdPathParam(t *testing.T, req *http.Request) {
+	t.Helper()
+	addIdPathParam(t, req, sampleUuid.String())
+}
+
+func addIdPathParam(t *testing.T, req *http.Request, id string) {
+	t.Helper()
+	req.URL.Path = fmt.Sprintf("/%s", id)
 }
 
 func generateTestEchoContextFromRequest(req *http.Request) (*echo.Context, *httptest.ResponseRecorder) {
@@ -129,37 +140,6 @@ func decodeResponseBody[T any](t *testing.T, w *httptest.ResponseRecorder) T {
 	require.NoError(t, err, "Actual err: %v", err)
 
 	return responseBody
-}
-
-type controllerFunc[Service any] func(*gin.Context, Service)
-
-func assertStatusCode[Service any](t *testing.T, req *http.Request, service Service, callable controllerFunc[Service], expectedStatusCode int) {
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	err := callable(ctx, service)
-
-	require.Nil(t, err)
-	require.Equal(t, expectedStatusCode, rw.Code)
-}
-
-func assertStatusCodeAndBody[Service any](t *testing.T, req *http.Request, service Service, callable controllerFunc[Service], expectedStatusCode int, expectedBody []byte) {
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	err := callable(ctx, service)
-
-	require.Nil(t, err)
-	require.Equal(t, expectedStatusCode, rw.Code)
-	require.Equal(t, expectedBody, rw.Body.Bytes(), "Actual: %s", rw.Body.String())
-}
-
-func assertStatusCodeAndJsonBody[Service any](t *testing.T, req *http.Request, service Service, callable controllerFunc[Service], expectedStatusCode int, expectedJsonBody string) {
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	err := callable(ctx, service)
-
-	require.Nil(t, err)
-	require.Equal(t, expectedStatusCode, rw.Code)
-	require.JSONEq(t, expectedJsonBody, rw.Body.String(), "Actual: %s", rw.Body.String())
 }
 
 func insertTestUser(t *testing.T, conn db.Connection) persistence.User {

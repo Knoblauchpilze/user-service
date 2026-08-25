@@ -59,7 +59,6 @@ func UserEndpoints(service service.UserService) Routes {
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users [post]
 func createUser(c *gin.Context, s service.UserService) {
-	// https://echo.labstack.com/docs/binding
 	var userDtoRequest communication.UserDtoRequest
 	err := c.Bind(&userDtoRequest)
 	if err != nil {

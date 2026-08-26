@@ -227,14 +227,13 @@ func TestUnit_UserController_UpdateUser_WhenIdHasWrongSyntax_ExpectBadRequest(t 
 func TestUnit_UserController_UpdateUser_WhenUserHasWrongSyntax_ExpectBadRequest(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	service, conn := createTestUserService(t)
-	user := insertTestUser(t, conn)
-	handler := createServiceAwareHttpHandler(updateUser, service)
+	m := &mockUserService{}
+	handler := createServiceAwareHttpHandler[service.UserService](updateUser, m)
 
 	r := createTestGinRouter(t, http.MethodPatch, "/:id", handler)
 
 	req := generateTestRequestWithJsonBody(t, http.MethodPatch, "not-a-user-dto-request")
-	addIdPathParam(t, req, user.Id.String())
+	addIdPathParam(t, req, uuid.NewString())
 	rw := httptest.NewRecorder()
 	r.ServeHTTP(rw, req)
 

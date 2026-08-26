@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/user-service/pkg/persistence"
 	"github.com/google/uuid"
 )
@@ -92,8 +91,8 @@ func (r *userRepositoryImpl) Update(ctx context.Context, user persistence.User) 
 
 	updatedAt, err := db.QueryOne[time.Time](ctx, r.conn, updateUserSqlTemplate, user.Email, user.Password, version, user.Id, user.Version)
 	if err != nil {
-		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
-			return user, errors.NewCode(OptimisticLockException)
+		if err == db.ErrNoMatchingRows {
+			return user, ErrOptimisticLockException
 		}
 		return user, err
 	}

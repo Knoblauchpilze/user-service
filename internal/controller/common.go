@@ -1,13 +1,16 @@
 package controller
 
 import (
-	"github.com/labstack/echo/v5"
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
+	"github.com/gin-gonic/gin"
 )
 
-type serviceAwareHttpHandler[T any] func(*echo.Context, T) error
+type Routes []*rest.Route
 
-func createServiceAwareHttpHandler[T any](handler serviceAwareHttpHandler[T], service T) echo.HandlerFunc {
-	return func(c *echo.Context) error {
-		return handler(c, service)
+type serviceAwareHttpHandler[T any] func(*gin.Context, T)
+
+func createServiceAwareHttpHandler[T any](handler serviceAwareHttpHandler[T], service T) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		handler(c, service)
 	}
 }

@@ -62,61 +62,77 @@ components:
             type: string
           type: array
           uniqueItems: false
-        requestId:
+        request_id:
           example: 669cd40f-ea15-40a8-ab03-81e704a3ecf9
           format: uuid
           type: string
         status:
           $ref: '#/components/schemas/rest.Status'
+        status_code:
+          example: 200
+          type: integer
       required:
       - details
-      - requestId
+      - request_id
       - status
+      - status_code
       type: object
     rest.ResponseEnvelope-communication_ApiKeyDtoResponse:
       properties:
         details:
           $ref: '#/components/schemas/communication.ApiKeyDtoResponse'
-        requestId:
+        request_id:
           example: 669cd40f-ea15-40a8-ab03-81e704a3ecf9
           format: uuid
           type: string
         status:
           $ref: '#/components/schemas/rest.Status'
+        status_code:
+          example: 200
+          type: integer
       required:
       - details
-      - requestId
+      - request_id
       - status
+      - status_code
       type: object
     rest.ResponseEnvelope-communication_UserDtoResponse:
       properties:
         details:
           $ref: '#/components/schemas/communication.UserDtoResponse'
-        requestId:
+        request_id:
           example: 669cd40f-ea15-40a8-ab03-81e704a3ecf9
           format: uuid
           type: string
         status:
           $ref: '#/components/schemas/rest.Status'
+        status_code:
+          example: 200
+          type: integer
       required:
       - details
-      - requestId
+      - request_id
       - status
+      - status_code
       type: object
     rest.ResponseEnvelope-string:
       properties:
         details:
           type: string
-        requestId:
+        request_id:
           example: 669cd40f-ea15-40a8-ab03-81e704a3ecf9
           format: uuid
           type: string
         status:
           $ref: '#/components/schemas/rest.Status'
+        status_code:
+          example: 200
+          type: integer
       required:
       - details
-      - requestId
+      - request_id
       - status
+      - status_code
       type: object
     rest.Status:
       enum:

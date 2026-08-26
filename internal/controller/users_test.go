@@ -1,12 +1,9 @@
 package controller
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -15,10 +12,9 @@ import (
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v5"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type mockUserService struct {
@@ -26,488 +22,513 @@ type mockUserService struct {
 }
 
 func TestUnit_UserController_CreateUser_WhenUserHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("not-a-user-dto-request"))
+	gin.SetMode(gin.TestMode)
 
 	m := &mockUserService{}
-	expectedBody := []byte("\"Invalid user syntax\"\n")
+	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
 
-	assertStatusCodeAndBody[service.UserService](t, req, m, createUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, "not-a-user-dto-request")
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid user syntax", actual)
 }
 
 func TestIT_UserController_Create(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
+	handler := createServiceAwareHttpHandler(createUser, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
 	requestDto := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("my-email-%s", uuid.NewString()),
 		Password: "my-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, conn := createTestUserService(t)
-
-	err = createUser(ctx, service)
-	assert.Nil(t, err)
-
-	var responseDto communication.UserDtoResponse
-	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
-	require.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusCreated, rw.Code)
-	assert.Equal(t, requestDto.Email, responseDto.Email)
-	assert.Equal(t, requestDto.Password, responseDto.Password)
-	assertUserExists(t, conn, responseDto.Id)
+	actual := decodeResponseBody[communication.UserDtoResponse](t, rw)
+	assert.Equal(t, requestDto.Email, actual.Email)
+	assert.Equal(t, requestDto.Password, actual.Password)
+	assertUserExists(t, conn, actual.Id)
 }
 
 func TestIT_UserController_Create_WhenEmailIsEmpty_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	m := &mockUserService{}
+	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
 	requestDto := communication.UserDtoRequest{
 		Email:    "",
 		Password: "my-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = createUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusBadRequest, rw.Code)
-	assert.Equal(t, "\"Invalid email\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid user syntax", actual)
 }
 
 func TestIT_UserController_Create_WhenPasswordIsEmpty_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	m := &mockUserService{}
+	handler := createServiceAwareHttpHandler[service.UserService](createUser, m)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
 	requestDto := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("my-email-%s", uuid.NewString()),
 		Password: "",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = createUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusBadRequest, rw.Code)
-	assert.Equal(t, "\"Invalid password\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid user syntax", actual)
 }
 
 func TestIT_UserController_Create_WhenEmailAlreadyExists_ExpectFailure(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
+
+	handler := createServiceAwareHttpHandler(createUser, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
 
 	requestDto := communication.UserDtoRequest{
 		Email:    user.Email,
 		Password: "my-super-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = createUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusConflict, rw.Code)
-	assert.Equal(t, "\"Email already in use\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Email already in use", actual)
 }
 
 func TestUnit_UserController_GetUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/not-a-uuid", nil)
+	gin.SetMode(gin.TestMode)
 
 	m := &mockUserService{}
-	expectedBody := []byte("\"Invalid id syntax\"\n")
+	handler := createServiceAwareHttpHandler[service.UserService](getUser, m)
 
-	assertStatusCodeAndBody[service.UserService](t, req, m, getUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodGet, "/:id", handler)
+
+	req := generateTestRequest(t, http.MethodGet)
+	addIdPathParam(t, req, "not-a-uuid")
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid id syntax", actual)
 }
 
 func TestIT_UserController_GetUser(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
+	handler := createServiceAwareHttpHandler(getUser, service)
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
+	r := createTestGinRouter(t, http.MethodGet, "/:id", handler)
 
-	service, _ := createTestUserService(t)
-
-	err := getUser(ctx, service)
-	assert.Nil(t, err)
-
-	var responseDto communication.UserDtoResponse
-	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
-	require.Nil(t, err)
+	req := generateTestRequest(t, http.MethodGet)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusOK, rw.Code)
-	assert.Equal(t, user.Id, responseDto.Id)
-	assert.Equal(t, user.Email, responseDto.Email)
-	assert.Equal(t, user.Password, responseDto.Password)
+	actual := decodeResponseBody[communication.UserDtoResponse](t, rw)
+	assert.Equal(t, user.Id, actual.Id)
+	assert.Equal(t, user.Email, actual.Email)
+	assert.Equal(t, user.Password, actual.Password)
 	safetyMargin := 1 * time.Second
-	assert.True(t, eassert.AreTimeCloserThan(user.CreatedAt, responseDto.CreatedAt, safetyMargin))
+	assert.True(t, eassert.AreTimeCloserThan(user.CreatedAt, actual.CreatedAt, safetyMargin))
 }
 
 func TestIT_UserController_GetUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
-	// Non-existent id
-	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
-
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: id.String()}})
+	gin.SetMode(gin.TestMode)
 
 	service, _ := createTestUserService(t)
+	handler := createServiceAwareHttpHandler(getUser, service)
 
-	err := getUser(ctx, service)
-	assert.Nil(t, err)
+	r := createTestGinRouter(t, http.MethodGet, "/:id", handler)
+
+	req := generateTestRequest(t, http.MethodGet)
+	addIdPathParam(t, req, uuid.MustParse("00000000-1111-2222-1111-000000000000").String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNotFound, rw.Code)
-	assert.Equal(t, "\"No such user\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "No such user", actual)
 }
 
 func TestIT_UserController_ListUsers(t *testing.T) {
-	conn := newTestConnection(t)
-	u1 := insertTestUser(t, conn)
-	u2 := insertTestUser(t, conn)
+	gin.SetMode(gin.TestMode)
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
+	service, conn := createTestUserService(t)
+	user1 := insertTestUser(t, conn)
+	user2 := insertTestUser(t, conn)
+	handler := createServiceAwareHttpHandler(listUsers, service)
 
-	service, _ := createTestUserService(t)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
 
-	err := listUsers(ctx, service)
-	assert.Nil(t, err)
-
-	var allUsers []uuid.UUID
-	err = json.Unmarshal(rw.Body.Bytes(), &allUsers)
-	require.Nil(t, err)
+	req := generateTestRequest(t, http.MethodGet)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusOK, rw.Code)
-	assert.GreaterOrEqual(t, len(allUsers), 2)
-	assert.Contains(t, allUsers, u1.Id)
-	assert.Contains(t, allUsers, u2.Id)
+	actual := decodeResponseBody[[]uuid.UUID](t, rw)
+	assert.GreaterOrEqual(t, len(actual), 2)
+	assert.Contains(t, actual, user1.Id)
+	assert.Contains(t, actual, user2.Id)
 }
 
 func TestUnit_UserController_UpdateUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPatch, "/not-a-uuid", nil)
+	gin.SetMode(gin.TestMode)
 
 	m := &mockUserService{}
-	expectedBody := []byte("\"Invalid id syntax\"\n")
+	handler := createServiceAwareHttpHandler[service.UserService](updateUser, m)
 
-	assertStatusCodeAndBody[service.UserService](t, req, m, updateUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodPatch, "/:id", handler)
+
+	req := generateTestRequest(t, http.MethodPatch)
+	addIdPathParam(t, req, "not-a-uuid")
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid id syntax", actual)
 }
 
 func TestUnit_UserController_UpdateUser_WhenUserHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader("not-a-user-dto-request"))
-
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: "e6349328-543b-4b4e-8a3c-4caf7b413589"}})
+	gin.SetMode(gin.TestMode)
 
 	m := &mockUserService{}
-	err := updateUser(ctx, m)
+	handler := createServiceAwareHttpHandler[service.UserService](updateUser, m)
 
-	require.Nil(t, err)
-	require.Equal(t, http.StatusBadRequest, rw.Code)
-	expectedBody := []byte("\"Invalid user syntax\"\n")
-	require.Equal(t, expectedBody, rw.Body.Bytes(), "Actual: %s", rw.Body.String())
+	r := createTestGinRouter(t, http.MethodPatch, "/:id", handler)
+
+	req := generateTestRequestWithJsonBody(t, http.MethodPatch, "not-a-user-dto-request")
+	addIdPathParam(t, req, uuid.NewString())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid user syntax", actual)
 }
 
 func TestIT_UserController_UpdateUser(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
+	handler := createServiceAwareHttpHandler(updateUser, service)
+
+	r := createTestGinRouter(t, http.MethodPatch, "/:id", handler)
 
 	requestDto := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("my-other-email-%s", uuid.NewString()),
 		Password: "my-other-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
-
-	service, _ := createTestUserService(t)
-
-	err = updateUser(ctx, service)
-	assert.Nil(t, err)
-
-	var responseDto communication.UserDtoResponse
-	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
-	require.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPatch, requestDto)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusOK, rw.Code)
+	actual := decodeResponseBody[communication.UserDtoResponse](t, rw)
+	assert.Equal(t, requestDto.Email, actual.Email)
+	assert.Equal(t, requestDto.Password, actual.Password)
 	assertEmailForUser(t, conn, user.Id, requestDto.Email)
-	assert.Equal(t, requestDto.Email, responseDto.Email)
-	assert.Equal(t, requestDto.Password, responseDto.Password)
+	assertPasswordForUser(t, conn, user.Id, requestDto.Password)
 }
 
 func TestIT_UserController_UpdateUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
-	// Non-existent id
-	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
 
+	service, conn := createTestUserService(t)
+	handler := createServiceAwareHttpHandler(updateUser, service)
+
+	r := createTestGinRouter(t, http.MethodPatch, "/:id", handler)
+
+	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
 	requestDto := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("my-email-%s", uuid.NewString()),
 		Password: "my-new-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: id.String()}})
-
-	service, _ := createTestUserService(t)
-
-	err = updateUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPatch, requestDto)
+	addIdPathParam(t, req, id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNotFound, rw.Code)
-	assert.Equal(t, "\"No such user\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "No such user", actual)
 	assertUserDoesNotExist(t, conn, id)
 }
 
 func TestUnit_UserController_DeleteUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodDelete, "/not-a-uuid", nil)
+	gin.SetMode(gin.TestMode)
 
 	m := &mockUserService{}
-	expectedBody := []byte("\"Invalid id syntax\"\n")
+	handler := createServiceAwareHttpHandler[service.UserService](deleteUser, m)
 
-	assertStatusCodeAndBody[service.UserService](t, req, m, deleteUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodDelete, "/:id", handler)
+
+	req := generateTestRequest(t, http.MethodDelete)
+	addIdPathParam(t, req, "not-a-uuid")
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid id syntax", actual)
 }
 
 func TestIT_UserController_DeleteUser(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 
-	req := httptest.NewRequest(http.MethodDelete, "/", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
+	handler := createServiceAwareHttpHandler(deleteUser, service)
 
-	service, _ := createTestUserService(t)
+	r := createTestGinRouter(t, http.MethodDelete, "/:id", handler)
 
-	err := deleteUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequest(t, http.MethodDelete)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNoContent, rw.Code)
 	assertUserDoesNotExist(t, conn, user.Id)
 }
 
 func TestIT_UserController_DeleteUser_WhenLoggedIn_ExpectApiKeyAlsoDeleted(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 	apiKey := insertApiKeyForUser(t, conn, user.Id)
 
-	req := httptest.NewRequest(http.MethodDelete, "/", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
+	handler := createServiceAwareHttpHandler(deleteUser, service)
 
-	service, _ := createTestUserService(t)
+	r := createTestGinRouter(t, http.MethodDelete, "/:id", handler)
 
-	err := deleteUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequest(t, http.MethodDelete)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNoContent, rw.Code)
 	assertApiKeyDoesNotExist(t, conn, apiKey.Id)
 }
 
 func TestIT_UserController_DeleteUser_WhenUserDoesNotExist_ExpectSuccess(t *testing.T) {
-	// Non-existent id
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
+	handler := createServiceAwareHttpHandler(deleteUser, service)
+
+	r := createTestGinRouter(t, http.MethodDelete, "/:id", handler)
+
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
-
-	req := httptest.NewRequest(http.MethodDelete, "/", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: id.String()}})
-
-	service, _ := createTestUserService(t)
-
-	err := deleteUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequest(t, http.MethodDelete)
+	addIdPathParam(t, req, id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNoContent, rw.Code)
+	assertUserDoesNotExist(t, conn, id)
 }
 
 func TestUnit_UserController_LoginUserByEmail_WhenUserHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("not-a-user-dto-request"))
+	gin.SetMode(gin.TestMode)
 
 	m := &mockUserService{}
-	expectedBody := []byte("\"Invalid user syntax\"\n")
+	handler := createServiceAwareHttpHandler[service.UserService](loginUserByEmail, m)
 
-	assertStatusCodeAndBody[service.UserService](t, req, m, loginUserByEmail, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodPatch, "/", handler)
+
+	req := generateTestRequestWithJsonBody(t, http.MethodPatch, "not-a-user-dto-request")
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid user syntax", actual)
 }
 
 func TestIT_UserController_LoginUserByEmail(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
+	handler := createServiceAwareHttpHandler(loginUserByEmail, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
 
 	requestDto := communication.UserDtoRequest{
 		Email:    user.Email,
 		Password: user.Password,
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = loginUserByEmail(ctx, service)
-	assert.Nil(t, err)
-
-	var responseDto communication.ApiKeyDtoResponse
-	err = json.Unmarshal(rw.Body.Bytes(), &responseDto)
-	require.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusCreated, rw.Code)
+	actual := decodeResponseBody[communication.ApiKeyDtoResponse](t, rw)
 	assertEmailForUser(t, conn, user.Id, requestDto.Email)
-	assert.Equal(t, user.Id, responseDto.User)
-	assertApiKeyExistsByKey(t, conn, responseDto.Key)
+	assert.Equal(t, user.Id, actual.User)
+	assertApiKeyExistsByKey(t, conn, actual.Key)
 	expectedApproximateValidity := time.Now().Add(1 * time.Hour)
 	safetyMargin := 5 * time.Second
-	assert.True(t, eassert.AreTimeCloserThan(responseDto.ValidUntil, expectedApproximateValidity, safetyMargin))
+	assert.True(t, eassert.AreTimeCloserThan(actual.ValidUntil, expectedApproximateValidity, safetyMargin))
 }
 
 func TestIT_UserController_LoginUserByEmail_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	service, _ := createTestUserService(t)
+	handler := createServiceAwareHttpHandler(loginUserByEmail, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
+
 	requestDto := communication.UserDtoRequest{
 		Email:    fmt.Sprintf("some-email-%s", uuid.NewString()),
 		Password: "my-password",
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = loginUserByEmail(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNotFound, rw.Code)
-	assert.Equal(t, "\"No such user\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "No such user", actual)
 }
 
 func TestIT_UserController_LoginUserByEmail_WhenPasswordDoesNotMatch_ExpectFailure(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
+	handler := createServiceAwareHttpHandler(loginUserByEmail, service)
+
+	r := createTestGinRouter(t, http.MethodPost, "/", handler)
 
 	requestDto := communication.UserDtoRequest{
 		Email:    user.Email,
 		Password: fmt.Sprintf("%s-and-stuff", user.Password),
 	}
-
-	var body bytes.Buffer
-	err := json.NewEncoder(&body).Encode(requestDto)
-	require.Nil(t, err)
-
-	req := httptest.NewRequest(http.MethodPost, "/", &body)
-	req.Header.Set("Content-Type", "application/json")
-	ctx, rw := generateTestEchoContextFromRequest(req)
-
-	service, _ := createTestUserService(t)
-
-	err = loginUserByEmail(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequestWithJsonBody(t, http.MethodPost, requestDto)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusUnauthorized, rw.Code)
-	assert.Equal(t, "\"Invalid credentials\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid credentials", actual)
 }
 
 func TestUnit_UserController_LogoutUser_WhenIdHasWrongSyntax_ExpectBadRequest(t *testing.T) {
-	req := httptest.NewRequest(http.MethodDelete, "/not-a-uuid", nil)
+	gin.SetMode(gin.TestMode)
 
 	m := &mockUserService{}
-	expectedBody := []byte("\"Invalid id syntax\"\n")
+	handler := createServiceAwareHttpHandler[service.UserService](logoutUser, m)
 
-	assertStatusCodeAndBody[service.UserService](t, req, m, logoutUser, http.StatusBadRequest, expectedBody)
+	r := createTestGinRouter(t, http.MethodDelete, "/:id", handler)
+
+	req := generateTestRequest(t, http.MethodDelete)
+	addIdPathParam(t, req, "not-a-uuid")
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
+
+	assert.Equal(t, http.StatusBadRequest, rw.Code)
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "Invalid id syntax", actual)
 }
 
 func TestIT_UserController_LogoutUser(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 	apiKey := insertApiKeyForUser(t, conn, user.Id)
 
-	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
+	handler := createServiceAwareHttpHandler(logoutUser, service)
 
-	service, _ := createTestUserService(t)
+	r := createTestGinRouter(t, http.MethodDelete, "/:id", handler)
 
-	err := logoutUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequest(t, http.MethodDelete)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNoContent, rw.Code)
-	assertApiKeyDoesNotExist(t, conn, apiKey.Id)
 	assertUserExists(t, conn, user.Id)
+	assertApiKeyDoesNotExist(t, conn, apiKey.Id)
 }
 
 func TestIT_UserController_LogoutUser_WhenNotLoggedIn_ExpectSuccess(t *testing.T) {
-	conn := newTestConnection(t)
+	gin.SetMode(gin.TestMode)
+
+	service, conn := createTestUserService(t)
 	user := insertTestUser(t, conn)
 
-	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: user.Id.String()}})
+	handler := createServiceAwareHttpHandler(logoutUser, service)
 
-	service, _ := createTestUserService(t)
+	r := createTestGinRouter(t, http.MethodDelete, "/:id", handler)
 
-	err := logoutUser(ctx, service)
-	assert.Nil(t, err)
+	req := generateTestRequest(t, http.MethodDelete)
+	addIdPathParam(t, req, user.Id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNoContent, rw.Code)
 	assertUserExists(t, conn, user.Id)
 }
 
 func TestIT_UserController_LogoutUser_WhenUserDoesNotExist_ExpectFailure(t *testing.T) {
-	// Non-existent id
-	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
-
-	req := httptest.NewRequest(http.MethodDelete, "/sessions", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
-	ctx.SetPathValues([]echo.PathValue{{Name: "id", Value: id.String()}})
+	gin.SetMode(gin.TestMode)
 
 	service, _ := createTestUserService(t)
+	handler := createServiceAwareHttpHandler(logoutUser, service)
 
-	err := logoutUser(ctx, service)
-	assert.Nil(t, err)
+	r := createTestGinRouter(t, http.MethodDelete, "/:id", handler)
+
+	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
+	req := generateTestRequest(t, http.MethodDelete)
+	addIdPathParam(t, req, id.String())
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
 	assert.Equal(t, http.StatusNotFound, rw.Code)
-	assert.Equal(t, "\"No such user\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "No such user", actual)
 }
 
 func createTestUserService(t *testing.T) (service.UserService, db.Connection) {

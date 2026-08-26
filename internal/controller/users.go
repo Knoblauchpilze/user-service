@@ -4,18 +4,16 @@ import (
 	"net/http"
 
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/db"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/db/pgx"
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
 	"github.com/Knoblauchpilze/user-service/internal/service"
 	"github.com/Knoblauchpilze/user-service/pkg/communication"
 	"github.com/Knoblauchpilze/user-service/pkg/repositories"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v5"
 )
 
-func UserEndpoints(service service.UserService) rest.Routes {
-	var out rest.Routes
+func UserEndpoints(service service.UserService) Routes {
+	var out Routes
 
 	postHandler := createServiceAwareHttpHandler(createUser, service)
 	post := rest.NewRoute(http.MethodPost, "", postHandler)
@@ -60,30 +58,27 @@ func UserEndpoints(service service.UserService) rest.Routes {
 // @Failure 409 {object} rest.ResponseEnvelope[string] "Email already in use"
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users [post]
-func createUser(c *echo.Context, s service.UserService) error {
-	// https://echo.labstack.com/docs/binding
+func createUser(c *gin.Context, s service.UserService) {
 	var userDtoRequest communication.UserDtoRequest
 	err := c.Bind(&userDtoRequest)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid user syntax")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid user syntax")
+		return
 	}
 
-	out, err := s.Create(c.Request().Context(), userDtoRequest)
+	out, err := s.Create(c.Request.Context(), userDtoRequest)
 	if err != nil {
-		if errors.IsErrorWithCode(err, service.InvalidEmail) {
-			return c.JSON(http.StatusBadRequest, "Invalid email")
-		}
-		if errors.IsErrorWithCode(err, service.InvalidPassword) {
-			return c.JSON(http.StatusBadRequest, "Invalid password")
-		}
-		if errors.IsErrorWithCode(err, pgx.UniqueConstraintViolation) {
-			return c.JSON(http.StatusConflict, "Email already in use")
+		dbErr, ok := db.AsDatabaseError(err)
+		if ok && dbErr.Code == db.ErrUniqueConstraintViolation {
+			c.AbortWithStatusJSON(http.StatusConflict, "Email already in use")
+			return
 		}
 
-		return c.JSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
-	return c.JSON(http.StatusCreated, out)
+	c.JSON(http.StatusCreated, out)
 }
 
 // getUser godoc
@@ -98,23 +93,26 @@ func createUser(c *echo.Context, s service.UserService) error {
 // @Failure 404 {object} rest.ResponseEnvelope[string] "No such user"
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users/{id} [get]
-func getUser(c *echo.Context, s service.UserService) error {
+func getUser(c *gin.Context, s service.UserService) {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid id syntax")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid id syntax")
+		return
 	}
 
-	out, err := s.Get(c.Request().Context(), id)
+	out, err := s.Get(c.Request.Context(), id)
 	if err != nil {
-		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
-			return c.JSON(http.StatusNotFound, "No such user")
+		if err == db.ErrNoMatchingRows {
+			c.AbortWithStatusJSON(http.StatusNotFound, "No such user")
+			return
 		}
 
-		return c.JSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
-	return c.JSON(http.StatusOK, out)
+	c.JSON(http.StatusOK, out)
 }
 
 // listUsers godoc
@@ -126,13 +124,14 @@ func getUser(c *echo.Context, s service.UserService) error {
 // @Success 200 {object} rest.ResponseEnvelope[[]string]
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users [get]
-func listUsers(c *echo.Context, s service.UserService) error {
-	out, err := s.List(c.Request().Context())
+func listUsers(c *gin.Context, s service.UserService) {
+	out, err := s.List(c.Request.Context())
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
-	return c.JSON(http.StatusOK, out)
+	c.JSON(http.StatusOK, out)
 }
 
 // updateUser godoc
@@ -149,33 +148,38 @@ func listUsers(c *echo.Context, s service.UserService) error {
 // @Failure 409 {object} rest.ResponseEnvelope[string] "User is not up to date"
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users/{id} [patch]
-func updateUser(c *echo.Context, s service.UserService) error {
+func updateUser(c *gin.Context, s service.UserService) {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid id syntax")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid id syntax")
+		return
 	}
 
 	var userDtoRequest communication.UserDtoRequest
 	err = c.Bind(&userDtoRequest)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid user syntax")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid user syntax")
+		return
 	}
 
-	out, err := s.Update(c.Request().Context(), id, userDtoRequest)
+	out, err := s.Update(c.Request.Context(), id, userDtoRequest)
 	if err != nil {
-		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
-			return c.JSON(http.StatusNotFound, "No such user")
+		if err == db.ErrNoMatchingRows {
+			c.AbortWithStatusJSON(http.StatusNotFound, "No such user")
+			return
 		}
 
-		if errors.IsErrorWithCode(err, repositories.OptimisticLockException) {
-			return c.JSON(http.StatusConflict, "User is not up to date")
+		if err == repositories.ErrOptimisticLockException {
+			c.AbortWithStatusJSON(http.StatusConflict, "User is not up to date")
+			return
 		}
 
-		return c.JSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
-	return c.JSON(http.StatusOK, out)
+	c.JSON(http.StatusOK, out)
 }
 
 // deleteUser godoc
@@ -188,19 +192,21 @@ func updateUser(c *echo.Context, s service.UserService) error {
 // @Failure 400 {object} rest.ResponseEnvelope[string] "Invalid id syntax"
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users/{id} [delete]
-func deleteUser(c *echo.Context, s service.UserService) error {
+func deleteUser(c *gin.Context, s service.UserService) {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid id syntax")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid id syntax")
+		return
 	}
 
-	err = s.Delete(c.Request().Context(), id)
+	err = s.Delete(c.Request.Context(), id)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err)
+		c.JSON(http.StatusInternalServerError, err)
+		return
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }
 
 // loginUserByEmail godoc
@@ -216,26 +222,30 @@ func deleteUser(c *echo.Context, s service.UserService) error {
 // @Failure 404 {object} rest.ResponseEnvelope[string] "No such user"
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users/sessions [post]
-func loginUserByEmail(c *echo.Context, s service.UserService) error {
+func loginUserByEmail(c *gin.Context, s service.UserService) {
 	var userDtoRequest communication.UserDtoRequest
 	err := c.Bind(&userDtoRequest)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid user syntax")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid user syntax")
+		return
 	}
 
-	out, err := s.Login(c.Request().Context(), userDtoRequest)
+	out, err := s.Login(c.Request.Context(), userDtoRequest)
 	if err != nil {
-		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
-			return c.JSON(http.StatusNotFound, "No such user")
+		if err == db.ErrNoMatchingRows {
+			c.AbortWithStatusJSON(http.StatusNotFound, "No such user")
+			return
 		}
-		if errors.IsErrorWithCode(err, service.InvalidCredentials) {
-			return c.JSON(http.StatusUnauthorized, "Invalid credentials")
+		if err == service.ErrInvalidCredentials {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, "Invalid credentials")
+			return
 		}
 
-		return c.JSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
-	return c.JSON(http.StatusCreated, out)
+	c.JSON(http.StatusCreated, out)
 }
 
 // logoutUser godoc
@@ -249,21 +259,24 @@ func loginUserByEmail(c *echo.Context, s service.UserService) error {
 // @Failure 404 {object} rest.ResponseEnvelope[string] "No such user"
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users/sessions/{id} [delete]
-func logoutUser(c *echo.Context, s service.UserService) error {
+func logoutUser(c *gin.Context, s service.UserService) {
 	maybeId := c.Param("id")
 	id, err := uuid.Parse(maybeId)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, "Invalid id syntax")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid id syntax")
+		return
 	}
 
-	err = s.Logout(c.Request().Context(), id)
+	err = s.Logout(c.Request.Context(), id)
 	if err != nil {
-		if errors.IsErrorWithCode(err, db.NoMatchingRows) {
-			return c.JSON(http.StatusNotFound, "No such user")
+		if err == db.ErrNoMatchingRows {
+			c.AbortWithStatusJSON(http.StatusNotFound, "No such user")
+			return
 		}
 
-		return c.JSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }

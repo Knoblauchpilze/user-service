@@ -3,17 +3,16 @@ package controller
 import (
 	"net/http"
 
-	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
 	"github.com/Knoblauchpilze/backend-toolkit/pkg/rest"
 	"github.com/Knoblauchpilze/user-service/internal/service"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v5"
 )
 
 const apiKeyHeaderKey = "X-Api-Key"
 
-func AuthEndpoints(service service.AuthService) rest.Routes {
-	var out rest.Routes
+func AuthEndpoints(service service.AuthService) Routes {
+	var out Routes
 
 	authHandler := createServiceAwareHttpHandler(authUser, service)
 	auth := rest.NewRoute(http.MethodGet, "/auth", authHandler)
@@ -34,22 +33,25 @@ func AuthEndpoints(service service.AuthService) rest.Routes {
 // @Failure 403 {object} rest.ResponseEnvelope[string] "User is not authenticated"
 // @Failure 500 {object} rest.ResponseEnvelope[string] "Internal server error"
 // @Router /users/auth [get]
-func authUser(c *echo.Context, s service.AuthService) error {
-	apiKey, exists := tryGetApiKeyHeader(c.Request())
+func authUser(c *gin.Context, s service.AuthService) {
+	apiKey, exists := tryGetApiKeyHeader(c.Request)
 	if !exists {
-		return c.JSON(http.StatusBadRequest, "Invalid API key")
+		c.AbortWithStatusJSON(http.StatusBadRequest, "Invalid API key")
+		return
 	}
 
-	_, err := s.Authenticate(c.Request().Context(), apiKey)
+	_, err := s.Authenticate(c.Request.Context(), apiKey)
 	if err != nil {
 		if isUserNotAuthenticated(err) {
-			return c.JSON(http.StatusForbidden, err)
+			c.AbortWithStatusJSON(http.StatusForbidden, err)
+			return
 		}
 
-		return c.JSON(http.StatusInternalServerError, err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		return
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	c.Status(http.StatusNoContent)
 }
 
 func tryGetApiKeyHeader(req *http.Request) (uuid.UUID, bool) {
@@ -70,5 +72,5 @@ func tryGetApiKeyHeader(req *http.Request) (uuid.UUID, bool) {
 }
 
 func isUserNotAuthenticated(err error) bool {
-	return errors.IsErrorWithCode(err, service.UserNotAuthenticated) || errors.IsErrorWithCode(err, service.AuthenticationExpired)
+	return err == service.ErrUserNotAuthenticated || err == service.ErrAuthenticationExpired
 }

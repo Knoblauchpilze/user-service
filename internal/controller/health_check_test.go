@@ -1,42 +1,47 @@
 package controller
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Knoblauchpilze/backend-toolkit/pkg/errors"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestIT_HealthcheckController(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	conn := newTestConnection(t)
+	handler := createServiceAwareHttpHandler(healthcheck, conn)
 
-	req := httptest.NewRequest(http.MethodGet, "/healtcheck", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
 
-	err := healthcheck(ctx, conn)
+	req := generateTestRequest(t, http.MethodGet)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
-	assert.Nil(t, err)
 	assert.Equal(t, http.StatusOK, rw.Code)
-	assert.Equal(t, "\"OK\"\n", rw.Body.String())
+	actual := decodeResponseBody[string](t, rw)
+	assert.Equal(t, "OK", actual)
 }
 
 func TestIT_HealthcheckController_WhenConnectionClosed_ExpectServiceUnavailable(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
 	conn := newTestConnection(t)
-	conn.Close(context.Background())
+	conn.Close(t.Context())
+	handler := createServiceAwareHttpHandler(healthcheck, conn)
 
-	req := httptest.NewRequest(http.MethodGet, "/healtcheck", nil)
-	ctx, rw := generateTestEchoContextFromRequest(req)
+	r := createTestGinRouter(t, http.MethodGet, "/", handler)
 
-	err := healthcheck(ctx, conn)
+	req := generateTestRequest(t, http.MethodGet)
+	rw := httptest.NewRecorder()
+	r.ServeHTTP(rw, req)
 
-	assert.Nil(t, err)
 	assert.Equal(t, http.StatusServiceUnavailable, rw.Code)
-	expectedResponse := `
-	{
-		"Code": 100,
-		"Message": "An unexpected error occurred"
-	}`
-	assert.JSONEq(t, expectedResponse, rw.Body.String())
+	actual := decodeResponseBody[errors.ErrorWithCode](t, rw)
+	assert.Equal(t, errors.ErrorCode(100), actual.Code)
+	assert.Equal(t, "an unexpected error occurred", actual.Message)
 }

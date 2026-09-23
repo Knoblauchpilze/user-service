@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/Knoblauchpilze/easy-assert v0.4.0
 	github.com/stretchr/testify v1.12.1
-	github.com/swaggo/swag/v2 v2.0.0-rc5
+	github.com/swaggo/swag/v2 v2.0.0-rc6
 )
 
 require (

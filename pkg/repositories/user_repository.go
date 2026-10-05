@@ -15,14 +15,14 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (persistence.User, error)
 	List(ctx context.Context) ([]uuid.UUID, error)
 	Update(ctx context.Context, user persistence.User) (persistence.User, error)
-	Delete(ctx context.Context, tx db.Transaction, id uuid.UUID) error
+	Delete(ctx context.Context, tx *db.Transaction, id uuid.UUID) error
 }
 
 type userRepositoryImpl struct {
-	conn db.Connection
+	conn *db.Connection
 }
 
-func NewUserRepository(conn db.Connection) UserRepository {
+func NewUserRepository(conn *db.Connection) UserRepository {
 	return &userRepositoryImpl{
 		conn: conn,
 	}
@@ -109,7 +109,7 @@ DELETE FROM
 WHERE
 	id = $1`
 
-func (r *userRepositoryImpl) Delete(ctx context.Context, tx db.Transaction, id uuid.UUID) error {
+func (r *userRepositoryImpl) Delete(ctx context.Context, tx *db.Transaction, id uuid.UUID) error {
 	_, err := tx.Exec(ctx, deleteUserSqlTemplate, id)
 	return err
 }

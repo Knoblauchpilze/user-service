@@ -2,7 +2,6 @@ package controller
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,7 +27,7 @@ var (
 	dbTestConfig = postgresql.NewConfigForLocalhost("db_user_service", "user_service_manager", "manager_password")
 )
 
-func newTestConnection(t *testing.T) db.Connection {
+func newTestConnection(t *testing.T) *db.Connection {
 	t.Helper()
 
 	conn, err := db.New(t.Context(), dbTestConfig)
@@ -63,6 +62,8 @@ func generateTestRequestWithJsonBody[T any](
 	method string,
 	data T,
 ) *http.Request {
+	t.Helper()
+
 	ctx := rest.WithContextLogger(t.Context(), slog.Default())
 	req := httptest.NewRequestWithContext(ctx, method, "/", encodeBody(t, data))
 	req.Header.Set("Content-Type", "application/json")
@@ -127,7 +128,7 @@ func decodeResponseBody[T any](t *testing.T, w *httptest.ResponseRecorder) T {
 	return responseBody
 }
 
-func insertTestUser(t *testing.T, conn db.Connection) persistence.User {
+func insertTestUser(t *testing.T, conn *db.Connection) persistence.User {
 	repo := repositories.NewUserRepository(conn)
 
 	id := uuid.New()
@@ -137,7 +138,7 @@ func insertTestUser(t *testing.T, conn db.Connection) persistence.User {
 		Password:  "my-password",
 		CreatedAt: time.Now(),
 	}
-	out, err := repo.Create(context.Background(), user)
+	out, err := repo.Create(t.Context(), user)
 	require.Nil(t, err)
 
 	assertUserExists(t, conn, out.Id)
@@ -145,31 +146,36 @@ func insertTestUser(t *testing.T, conn db.Connection) persistence.User {
 	return out
 }
 
-func assertUserExists(t *testing.T, conn db.Connection, id uuid.UUID) {
-	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT id FROM api_user WHERE id = $1", id)
+func assertUserExists(t *testing.T, conn *db.Connection, id uuid.UUID) {
+	t.Helper()
+	value, err := db.QueryOne[uuid.UUID](t.Context(), conn, "SELECT id FROM api_user WHERE id = $1", id)
 	require.Nil(t, err)
 	require.Equal(t, id, value)
 }
 
-func assertUserDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {
-	value, err := db.QueryOne[int](context.Background(), conn, "SELECT COUNT(id) FROM api_user WHERE id = $1", id)
+func assertUserDoesNotExist(t *testing.T, conn *db.Connection, id uuid.UUID) {
+	t.Helper()
+	value, err := db.QueryOne[int](t.Context(), conn, "SELECT COUNT(id) FROM api_user WHERE id = $1", id)
 	require.Nil(t, err)
 	require.Zero(t, value)
 }
 
-func assertEmailForUser(t *testing.T, conn db.Connection, user uuid.UUID, expectedEmail string) {
-	value, err := db.QueryOne[string](context.Background(), conn, "SELECT email FROM api_user WHERE id = $1", user)
+func assertEmailForUser(t *testing.T, conn *db.Connection, user uuid.UUID, expectedEmail string) {
+	t.Helper()
+	value, err := db.QueryOne[string](t.Context(), conn, "SELECT email FROM api_user WHERE id = $1", user)
 	require.Nil(t, err)
 	require.Equal(t, expectedEmail, value)
 }
 
-func assertPasswordForUser(t *testing.T, conn db.Connection, user uuid.UUID, expectedPassword string) {
-	value, err := db.QueryOne[string](context.Background(), conn, "SELECT password FROM api_user WHERE id = $1", user)
+func assertPasswordForUser(t *testing.T, conn *db.Connection, user uuid.UUID, expectedPassword string) {
+	t.Helper()
+	value, err := db.QueryOne[string](t.Context(), conn, "SELECT password FROM api_user WHERE id = $1", user)
 	require.Nil(t, err)
 	require.Equal(t, expectedPassword, value)
 }
 
-func insertApiKeyForUser(t *testing.T, conn db.Connection, userId uuid.UUID) persistence.ApiKey {
+func insertApiKeyForUser(t *testing.T, conn *db.Connection, userId uuid.UUID) persistence.ApiKey {
+	t.Helper()
 	repo := repositories.NewApiKeyRepository(conn)
 
 	apiKey := persistence.ApiKey{
@@ -179,7 +185,7 @@ func insertApiKeyForUser(t *testing.T, conn db.Connection, userId uuid.UUID) per
 		ValidUntil: time.Date(2024, 11, 22, 17, 00, 10, 0, time.UTC),
 	}
 
-	out, err := repo.Create(context.Background(), apiKey)
+	out, err := repo.Create(t.Context(), apiKey)
 	require.Nil(t, err)
 
 	assertApiKeyExists(t, conn, out.Id)
@@ -187,20 +193,23 @@ func insertApiKeyForUser(t *testing.T, conn db.Connection, userId uuid.UUID) per
 	return out
 }
 
-func assertApiKeyExists(t *testing.T, conn db.Connection, id uuid.UUID) {
-	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT id FROM api_key WHERE id = $1", id)
+func assertApiKeyExists(t *testing.T, conn *db.Connection, id uuid.UUID) {
+	t.Helper()
+	value, err := db.QueryOne[uuid.UUID](t.Context(), conn, "SELECT id FROM api_key WHERE id = $1", id)
 	require.Nil(t, err)
 	require.Equal(t, id, value)
 }
 
-func assertApiKeyExistsByKey(t *testing.T, conn db.Connection, key uuid.UUID) {
-	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT key FROM api_key WHERE key = $1", key)
+func assertApiKeyExistsByKey(t *testing.T, conn *db.Connection, key uuid.UUID) {
+	t.Helper()
+	value, err := db.QueryOne[uuid.UUID](t.Context(), conn, "SELECT key FROM api_key WHERE key = $1", key)
 	require.Nil(t, err)
 	require.Equal(t, key, value)
 }
 
-func assertApiKeyDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {
-	value, err := db.QueryOne[int](context.Background(), conn, "SELECT COUNT(id) FROM api_key WHERE id = $1", id)
+func assertApiKeyDoesNotExist(t *testing.T, conn *db.Connection, id uuid.UUID) {
+	t.Helper()
+	value, err := db.QueryOne[int](t.Context(), conn, "SELECT COUNT(id) FROM api_key WHERE id = $1", id)
 	require.Nil(t, err)
 	require.Zero(t, value)
 }

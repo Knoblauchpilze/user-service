@@ -25,7 +25,7 @@ func TestUnit_AuthService_Authenticate_WhenKeyDoesNotExist_ExpectFailure(t *test
 	}
 
 	service := newTestAuthService(repo)
-	_, err := service.Authenticate(context.Background(), uuid.New())
+	_, err := service.Authenticate(t.Context(), uuid.New())
 
 	assert.ErrorIs(t, err, ErrUserNotAuthenticated, "Actual err: %v", err)
 }
@@ -39,7 +39,7 @@ func TestUnit_AuthService_Authenticate_WhenKeyExpired_ExpectFailure(t *testing.T
 	}
 
 	service := newTestAuthService(repo)
-	_, err := service.Authenticate(context.Background(), uuid.New())
+	_, err := service.Authenticate(t.Context(), uuid.New())
 
 	assert.ErrorIs(t, err, ErrAuthenticationExpired, "Actual err: %v", err)
 }
@@ -53,7 +53,7 @@ func TestIT_AuthService_Authenticate_WhenAuthenticated_ExpectSuccess(t *testing.
 	apiKey := insertApiKeyForUser(t, conn, user.Id)
 
 	service := NewAuthService(repos)
-	_, err := service.Authenticate(context.Background(), apiKey.Key)
+	_, err := service.Authenticate(t.Context(), apiKey.Key)
 
 	assert.Nil(t, err)
 }

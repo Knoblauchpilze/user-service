@@ -96,7 +96,18 @@ func main() {
 		}
 	}
 
-	wait, err := process.StartWithSignalHandler(context.Background(), s)
+	listener, err := s.Bind(conf.Port)
+	if err != nil {
+		log.Error("Failed to bind server", slog.Int("port", int(conf.Port)), slog.Any("error", err))
+		os.Exit(1)
+	}
+
+	serveFunc := func(ctx context.Context) error {
+		return s.Serve(ctx, listener)
+	}
+	proc := process.NewContextProcess(serveFunc)
+
+	wait, err := process.AsyncStartWithSignalHandler(context.Background(), proc)
 	if err != nil {
 		log.Error("Failed to start server", slog.Any("error", err))
 		os.Exit(1)

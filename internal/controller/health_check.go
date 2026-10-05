@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HealthCheckEndpoints(pool db.Connection) Routes {
+func HealthCheckEndpoints(pool *db.Connection) Routes {
 	var out Routes
 
 	getHandler := createServiceAwareHttpHandler(healthcheck, pool)
@@ -27,7 +27,7 @@ func HealthCheckEndpoints(pool db.Connection) Routes {
 // @Success 200 {object} rest.ResponseEnvelope[string]
 // @Failure 503 {object} rest.ResponseEnvelope[string] "Database unavailable"
 // @Router /healthcheck [get]
-func healthcheck(c *gin.Context, pool db.Connection) {
+func healthcheck(c *gin.Context, pool *db.Connection) {
 	err := pool.Ping(c.Request.Context())
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusServiceUnavailable, err)

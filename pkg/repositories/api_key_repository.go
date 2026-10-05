@@ -13,14 +13,14 @@ type ApiKeyRepository interface {
 	Get(ctx context.Context, id uuid.UUID) (persistence.ApiKey, error)
 	GetForKey(ctx context.Context, apiKey uuid.UUID) (persistence.ApiKey, error)
 	GetForUser(ctx context.Context, user uuid.UUID) (persistence.ApiKey, error)
-	DeleteForUser(ctx context.Context, tx db.Transaction, user uuid.UUID) error
+	DeleteForUser(ctx context.Context, tx *db.Transaction, user uuid.UUID) error
 }
 
 type apiKeyRepositoryImpl struct {
-	conn db.Connection
+	conn *db.Connection
 }
 
-func NewApiKeyRepository(conn db.Connection) ApiKeyRepository {
+func NewApiKeyRepository(conn *db.Connection) ApiKeyRepository {
 	return &apiKeyRepositoryImpl{
 		conn: conn,
 	}
@@ -96,7 +96,7 @@ DELETE FROM
 WHERE
 	api_user = $1`
 
-func (r *apiKeyRepositoryImpl) DeleteForUser(ctx context.Context, tx db.Transaction, user uuid.UUID) error {
+func (r *apiKeyRepositoryImpl) DeleteForUser(ctx context.Context, tx *db.Transaction, user uuid.UUID) error {
 	_, err := tx.Exec(ctx, deleteApiKeyForUserSqlTemplate, user)
 	return err
 }

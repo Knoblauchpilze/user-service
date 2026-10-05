@@ -10,6 +10,7 @@ import (
 
 type Configuration struct {
 	Server   server.Config
+	Port     uint16
 	Database postgresql.Config
 	ApiKey   service.ApiKeyConfig
 }
@@ -21,9 +22,9 @@ func DefaultConfig() Configuration {
 	return Configuration{
 		Server: server.Config{
 			BasePath:        "/v1/users",
-			Port:            uint16(80),
 			ShutdownTimeout: 5 * time.Second,
 		},
+		Port: uint16(80),
 		Database: postgresql.NewConfigForDockerContainer(
 			defaultDatabaseName,
 			defaultDatabaseUser,

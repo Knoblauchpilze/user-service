@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -25,7 +24,7 @@ func TestIT_UserRepository_Create(t *testing.T) {
 		Version:   6,
 	}
 
-	actual, err := repo.Create(context.Background(), user)
+	actual, err := repo.Create(t.Context(), user)
 	assert.Nil(t, err)
 
 	assert.True(t, eassert.EqualsIgnoringFields(actual, user, "UpdatedAt"))
@@ -46,7 +45,7 @@ func TestIT_UserRepository_Create_WhenDuplicateName_ExpectFailure(t *testing.T) 
 		Version:   6,
 	}
 
-	_, err := repo.Create(context.Background(), newUser)
+	_, err := repo.Create(t.Context(), newUser)
 
 	actual, ok := db.AsDatabaseError(err)
 	require.True(t, ok)
@@ -58,7 +57,7 @@ func TestIT_UserRepository_Get(t *testing.T) {
 	repo, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 
-	actual, err := repo.Get(context.Background(), user.Id)
+	actual, err := repo.Get(t.Context(), user.Id)
 	assert.Nil(t, err)
 
 	assert.True(t, eassert.EqualsIgnoringFields(actual, user))
@@ -69,7 +68,7 @@ func TestIT_UserRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
 
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
-	_, err := repo.Get(context.Background(), id)
+	_, err := repo.Get(t.Context(), id)
 	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
@@ -77,7 +76,7 @@ func TestIT_UserRepository_GetByEmail(t *testing.T) {
 	repo, conn := newTestUserRepository(t)
 	user := insertTestUser(t, conn)
 
-	actual, err := repo.GetByEmail(context.Background(), user.Email)
+	actual, err := repo.GetByEmail(t.Context(), user.Email)
 	assert.Nil(t, err)
 
 	assert.True(t, eassert.EqualsIgnoringFields(actual, user))
@@ -86,7 +85,7 @@ func TestIT_UserRepository_GetByEmail(t *testing.T) {
 func TestIT_UserRepository_GetByEmail_WhenNotFound_ExpectFailure(t *testing.T) {
 	repo, _ := newTestUserRepository(t)
 
-	_, err := repo.GetByEmail(context.Background(), "not-an-email")
+	_, err := repo.GetByEmail(t.Context(), "not-an-email")
 	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
@@ -95,7 +94,7 @@ func TestIT_UserRepository_List(t *testing.T) {
 	u1 := insertTestUser(t, conn)
 	u2 := insertTestUser(t, conn)
 
-	ids, err := repo.List(context.Background())
+	ids, err := repo.List(t.Context())
 
 	assert.Nil(t, err)
 	assert.GreaterOrEqual(t, len(ids), 2)
@@ -111,7 +110,7 @@ func TestIT_UserRepository_Update(t *testing.T) {
 	updatedUser := user
 	updatedUser.Password = "my-new-password"
 
-	actual, err := repo.Update(context.Background(), updatedUser)
+	actual, err := repo.Update(t.Context(), updatedUser)
 
 	assert.Nil(t, err)
 
@@ -134,7 +133,7 @@ func TestIT_UserRepository_Update_WhenNameAlreadyExists_ExpectFailure(t *testing
 	updatedUser := toUpdate
 	updatedUser.Email = user.Email
 
-	_, err := repo.Update(context.Background(), updatedUser)
+	_, err := repo.Update(t.Context(), updatedUser)
 
 	actual, ok := db.AsDatabaseError(err)
 	require.True(t, ok)
@@ -150,7 +149,7 @@ func TestIT_UserRepository_Update_WhenVersionIsWrong_ExpectOptimisticLockExcepti
 	updatedUser.Password = "my-new-password"
 	updatedUser.Version = user.Version + 2
 
-	_, err := repo.Update(context.Background(), updatedUser)
+	_, err := repo.Update(t.Context(), updatedUser)
 
 	assert.ErrorIs(t, err, ErrOptimisticLockException, "Actual err: %v", err)
 }
@@ -163,10 +162,10 @@ func TestIT_UserRepository_Update_BumpsUpdatedAt(t *testing.T) {
 	updatedUser := user
 	updatedUser.Password = "my-new-password"
 
-	_, err := repo.Update(context.Background(), updatedUser)
+	_, err := repo.Update(t.Context(), updatedUser)
 	assert.Nil(t, err)
 
-	updatedUserFromDb, err := repo.Get(context.Background(), user.Id)
+	updatedUserFromDb, err := repo.Get(t.Context(), user.Id)
 	assert.Nil(t, err)
 	assert.True(t, updatedUserFromDb.UpdatedAt.After(user.UpdatedAt))
 }
@@ -179,10 +178,10 @@ func TestIT_UserRepository_Update_BumpsVersion(t *testing.T) {
 	updatedUser := user
 	updatedUser.Password = "my-new-password"
 
-	_, err := repo.Update(context.Background(), updatedUser)
+	_, err := repo.Update(t.Context(), updatedUser)
 	assert.Nil(t, err)
 
-	updatedUserFromDb, err := repo.Get(context.Background(), user.Id)
+	updatedUserFromDb, err := repo.Get(t.Context(), user.Id)
 	assert.Nil(t, err)
 	assert.Equal(t, user.Version+1, updatedUserFromDb.Version)
 }
@@ -192,8 +191,8 @@ func TestIT_UserRepository_Delete(t *testing.T) {
 
 	user := insertTestUser(t, conn)
 
-	err := repo.Delete(context.Background(), tx, user.Id)
-	tx.Close(context.Background())
+	err := repo.Delete(t.Context(), tx, user.Id)
+	tx.Close(t.Context())
 
 	assert.Nil(t, err)
 	assertUserDoesNotExist(t, conn, user.Id)
@@ -206,21 +205,21 @@ func TestIT_UserRepository_Delete_WhenNotFound_ExpectSuccess(t *testing.T) {
 	id := uuid.New()
 	require.NotEqual(t, user.Id, id)
 
-	err := repo.Delete(context.Background(), tx, id)
-	tx.Close(context.Background())
+	err := repo.Delete(t.Context(), tx, id)
+	tx.Close(t.Context())
 
 	assert.Nil(t, err)
 	assertUserExists(t, conn, user.Id)
 }
 
-func newTestUserRepository(t *testing.T) (UserRepository, db.Connection) {
+func newTestUserRepository(t *testing.T) (UserRepository, *db.Connection) {
 	conn := newTestConnection(t)
 	return NewUserRepository(conn), conn
 }
 
-func newTestUserRepositoryAndTransaction(t *testing.T) (UserRepository, db.Connection, db.Transaction) {
+func newTestUserRepositoryAndTransaction(t *testing.T) (UserRepository, *db.Connection, *db.Transaction) {
 	conn := newTestConnection(t)
-	tx, err := conn.BeginTx(context.Background())
+	tx, err := conn.BeginTx(t.Context())
 	require.Nil(t, err)
 	return NewUserRepository(conn), conn, tx
 }

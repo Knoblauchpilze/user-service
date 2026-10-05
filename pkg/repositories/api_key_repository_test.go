@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -25,7 +24,7 @@ func TestIT_ApiKeyRepository_Create(t *testing.T) {
 		ValidUntil: time.Date(2024, 11, 12, 18, 32, 20, 0, time.UTC),
 	}
 
-	actual, err := repo.Create(context.Background(), apiKey)
+	actual, err := repo.Create(t.Context(), apiKey)
 	assert.Nil(t, err)
 
 	assert.Equal(t, apiKey, actual)
@@ -47,7 +46,7 @@ func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectKeyIsReturned(t *
 	require.NotEqual(t, apiKey.Id, newKey.Id)
 	require.NotEqual(t, apiKey.Key, newKey.Key)
 
-	actual, err := repo.Create(context.Background(), newKey)
+	actual, err := repo.Create(t.Context(), newKey)
 
 	assert.Nil(t, err)
 	assert.Equal(t, apiKey.Id, actual.Id)
@@ -68,10 +67,10 @@ func TestIT_ApiKeyRepository_Create_WhenDuplicateForUser_ExpectValidityExtended(
 		ValidUntil: time.Date(2024, 11, 12, 18, 34, 40, 0, time.UTC),
 	}
 
-	actual, err := repo.Create(context.Background(), newKey)
+	actual, err := repo.Create(t.Context(), newKey)
 	require.Nil(t, err)
 
-	updated, err := repo.Get(context.Background(), apiKey.Id)
+	updated, err := repo.Get(t.Context(), apiKey.Id)
 	require.Nil(t, err)
 
 	assert.Nil(t, err)
@@ -84,7 +83,7 @@ func TestIT_ApiKeyRepository_Get(t *testing.T) {
 
 	_, apiKey := insertTestApiKey(t, conn)
 
-	actual, err := repo.Get(context.Background(), apiKey.Id)
+	actual, err := repo.Get(t.Context(), apiKey.Id)
 	assert.Nil(t, err)
 
 	actualUtc := actual
@@ -97,7 +96,7 @@ func TestIT_ApiKeyRepository_Get_WhenNotFound_ExpectFailure(t *testing.T) {
 
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
-	_, err := repo.Get(context.Background(), id)
+	_, err := repo.Get(t.Context(), id)
 	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
@@ -106,7 +105,7 @@ func TestIT_ApiKeyRepository_GetForKey(t *testing.T) {
 
 	_, apiKey := insertTestApiKey(t, conn)
 
-	actual, err := repo.GetForKey(context.Background(), apiKey.Key)
+	actual, err := repo.GetForKey(t.Context(), apiKey.Key)
 	assert.Nil(t, err)
 
 	actualUtc := actual
@@ -119,7 +118,7 @@ func TestIT_ApiKeyRepository_GetForKey_WhenNotFound_ExpectFailure(t *testing.T) 
 
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
-	_, err := repo.GetForKey(context.Background(), id)
+	_, err := repo.GetForKey(t.Context(), id)
 	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
@@ -128,7 +127,7 @@ func TestIT_ApiKeyRepository_GetForUser(t *testing.T) {
 
 	_, apiKey := insertTestApiKey(t, conn)
 
-	actual, err := repo.GetForUser(context.Background(), apiKey.ApiUser)
+	actual, err := repo.GetForUser(t.Context(), apiKey.ApiUser)
 	assert.Nil(t, err)
 
 	actualUtc := actual
@@ -141,7 +140,7 @@ func TestIT_ApiKeyRepository_GetForUser_WhenNotFound_ExpectFailure(t *testing.T)
 
 	// Non-existent id
 	id := uuid.MustParse("00000000-1111-2222-1111-000000000000")
-	_, err := repo.GetForUser(context.Background(), id)
+	_, err := repo.GetForUser(t.Context(), id)
 	assert.ErrorIs(t, err, db.ErrNoMatchingRows, "Actual err: %v", err)
 }
 
@@ -150,8 +149,8 @@ func TestIT_ApiKeyRepository_Delete(t *testing.T) {
 
 	user, apiKey := insertTestApiKey(t, conn)
 
-	err := repo.DeleteForUser(context.Background(), tx, user.Id)
-	tx.Close(context.Background())
+	err := repo.DeleteForUser(t.Context(), tx, user.Id)
+	tx.Close(t.Context())
 
 	assert.Nil(t, err)
 	assertApiKeyDoesNotExist(t, conn, apiKey.Id)
@@ -164,38 +163,43 @@ func TestIT_ApiKeyRepository_Delete_WhenNotFound_ExpectSuccess(t *testing.T) {
 	id := uuid.New()
 	require.NotEqual(t, user.Id, id)
 
-	err := repo.DeleteForUser(context.Background(), tx, id)
-	tx.Close(context.Background())
+	err := repo.DeleteForUser(t.Context(), tx, id)
+	tx.Close(t.Context())
 
 	assert.Nil(t, err)
 	assertApiKeyExists(t, conn, apiKey.Id)
 }
 
-func newTestApiKeyRepository(t *testing.T) (ApiKeyRepository, db.Connection) {
+func newTestApiKeyRepository(t *testing.T) (ApiKeyRepository, *db.Connection) {
+	t.Helper()
 	conn := newTestConnection(t)
 	return NewApiKeyRepository(conn), conn
 }
 
-func newTestApiKeyRepositoryAndTransaction(t *testing.T) (ApiKeyRepository, db.Connection, db.Transaction) {
+func newTestApiKeyRepositoryAndTransaction(t *testing.T) (ApiKeyRepository, *db.Connection, *db.Transaction) {
+	t.Helper()
 	conn := newTestConnection(t)
-	tx, err := conn.BeginTx(context.Background())
+	tx, err := conn.BeginTx(t.Context())
 	require.Nil(t, err)
 	return NewApiKeyRepository(conn), conn, tx
 }
 
-func assertApiKeyExists(t *testing.T, conn db.Connection, id uuid.UUID) {
-	value, err := db.QueryOne[uuid.UUID](context.Background(), conn, "SELECT id FROM api_key WHERE id = $1", id)
+func assertApiKeyExists(t *testing.T, conn *db.Connection, id uuid.UUID) {
+	t.Helper()
+	value, err := db.QueryOne[uuid.UUID](t.Context(), conn, "SELECT id FROM api_key WHERE id = $1", id)
 	require.Nil(t, err)
 	require.Equal(t, id, value)
 }
 
-func assertApiKeyDoesNotExist(t *testing.T, conn db.Connection, id uuid.UUID) {
-	value, err := db.QueryOne[int](context.Background(), conn, "SELECT COUNT(id) FROM api_key WHERE id = $1", id)
+func assertApiKeyDoesNotExist(t *testing.T, conn *db.Connection, id uuid.UUID) {
+	t.Helper()
+	value, err := db.QueryOne[int](t.Context(), conn, "SELECT COUNT(id) FROM api_key WHERE id = $1", id)
 	require.Nil(t, err)
 	require.Zero(t, value)
 }
 
-func insertTestApiKey(t *testing.T, conn db.Connection) (persistence.User, persistence.ApiKey) {
+func insertTestApiKey(t *testing.T, conn *db.Connection) (persistence.User, persistence.ApiKey) {
+	t.Helper()
 	user := insertTestUser(t, conn)
 
 	someTime := time.Date(2024, 11, 12, 18, 49, 35, 0, time.UTC)
@@ -206,7 +210,7 @@ func insertTestApiKey(t *testing.T, conn db.Connection) (persistence.User, persi
 		ApiUser:    user.Id,
 		ValidUntil: someTime,
 	}
-	_, err := conn.Exec(context.Background(), "INSERT INTO api_key (id, key, api_user, valid_until) VALUES ($1, $2, $3, $4)", apiKey.Id, apiKey.Key, apiKey.ApiUser, apiKey.ValidUntil)
+	_, err := conn.Exec(t.Context(), "INSERT INTO api_key (id, key, api_user, valid_until) VALUES ($1, $2, $3, $4)", apiKey.Id, apiKey.Key, apiKey.ApiUser, apiKey.ValidUntil)
 	require.Nil(t, err)
 
 	return user, apiKey

@@ -22,7 +22,7 @@ type UserService interface {
 }
 
 type userServiceImpl struct {
-	conn db.Connection
+	conn *db.Connection
 
 	userRepo   repositories.UserRepository
 	apiKeyRepo repositories.ApiKeyRepository
@@ -30,7 +30,7 @@ type userServiceImpl struct {
 	apiKeyValidity time.Duration
 }
 
-func NewUserService(config ApiKeyConfig, conn db.Connection, repos repositories.Repositories) UserService {
+func NewUserService(config ApiKeyConfig, conn *db.Connection, repos repositories.Repositories) UserService {
 	return &userServiceImpl{
 		conn:       conn,
 		userRepo:   repos.User,

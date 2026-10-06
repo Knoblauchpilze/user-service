@@ -531,7 +531,8 @@ func TestIT_UserController_LogoutUser_WhenUserDoesNotExist_ExpectFailure(t *test
 	assert.Equal(t, "No such user", actual)
 }
 
-func createTestUserService(t *testing.T) (service.UserService, db.Connection) {
+func createTestUserService(t *testing.T) (service.UserService, *db.Connection) {
+	t.Helper()
 	conn := newTestConnection(t)
 
 	repos := repositories.Repositories{
